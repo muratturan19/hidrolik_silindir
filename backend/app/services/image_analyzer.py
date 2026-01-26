@@ -332,17 +332,16 @@ EĞER ölçüler okunamıyorsa:
                                 "text": "Bu PDF teknik resimden hidrolik silindir ölçülerini çıkar."
                             },
                             {
-                                "type": "file",
-                                "file": {
-                                    "filename": "technical_drawing.pdf",
-                                    "file_data": f"data:application/pdf;base64,{pdf_base64}"
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:application/pdf;base64,{pdf_base64}"
                                 }
                             }
                         ]
                     }
                 ],
-                max_tokens=2000,
-                temperature=0.1
+                max_completion_tokens=2000,
+                reasoning={"effort": "high"}
             )
 
             result_text = response.choices[0].message.content
@@ -394,8 +393,8 @@ EĞER ölçüler okunamıyorsa:
                         ]
                     }
                 ],
-                max_tokens=2000,
-                temperature=0.1
+                max_completion_tokens=2000,
+                reasoning={"effort": "high"}
             )
 
             result_text = response.choices[0].message.content
