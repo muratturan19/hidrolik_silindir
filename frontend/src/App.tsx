@@ -12,6 +12,39 @@ const STORAGE_KEYS = {
   PARAMETERS: 'hidrolik_parameters',
 };
 
+// Deep merge function to combine saved parameters with defaults
+function deepMerge<T extends object>(defaults: T, saved: Partial<T> | null): T {
+  if (!saved) return defaults;
+
+  const result = { ...defaults };
+
+  for (const key in saved) {
+    if (Object.prototype.hasOwnProperty.call(saved, key)) {
+      const savedValue = saved[key];
+      const defaultValue = defaults[key];
+
+      if (
+        savedValue !== null &&
+        typeof savedValue === 'object' &&
+        !Array.isArray(savedValue) &&
+        defaultValue !== null &&
+        typeof defaultValue === 'object' &&
+        !Array.isArray(defaultValue)
+      ) {
+        // Recursively merge nested objects
+        (result as Record<string, unknown>)[key] = deepMerge(
+          defaultValue as object,
+          savedValue as object
+        );
+      } else if (savedValue !== undefined) {
+        (result as Record<string, unknown>)[key] = savedValue;
+      }
+    }
+  }
+
+  return result;
+}
+
 function App() {
   const [currency, setCurrency] = useState(() => {
     return localStorage.getItem(STORAGE_KEYS.CURRENCY) || 'TRY';
@@ -24,7 +57,16 @@ function App() {
 
   const [parameters, setParameters] = useState<PricingParameters>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.PARAMETERS);
-    return saved ? JSON.parse(saved) : defaultPricingParameters;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Merge with defaults to ensure new fields are present
+        return deepMerge(defaultPricingParameters, parsed);
+      } catch {
+        return defaultPricingParameters;
+      }
+    }
+    return defaultPricingParameters;
   });
 
   // Save to localStorage on change
