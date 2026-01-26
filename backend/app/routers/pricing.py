@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from ..models import (
     ManualPricingRequest,
     PricingResult,
+    PricingParameters,
     MaterialType,
     CylinderType,
     MountingType
@@ -10,13 +11,19 @@ from ..services import PricingEngine
 
 router = APIRouter(prefix="/api/pricing", tags=["Fiyatlandırma"])
 
-pricing_engine = PricingEngine()
-
 
 @router.post("/calculate", response_model=PricingResult)
 async def calculate_pricing(request: ManualPricingRequest) -> PricingResult:
-    """Manuel girilen ölçülere göre fiyat hesapla"""
+    """
+    Manuel girilen ölçülere göre fiyat hesapla.
+
+    İsteğe bağlı olarak özel fiyatlandırma parametreleri gönderilebilir.
+    Parametreler gönderilmezse varsayılan değerler kullanılır.
+    """
     try:
+        # İstekte parametre varsa kullan, yoksa varsayılan
+        pricing_engine = PricingEngine(params=request.parameters)
+
         result = pricing_engine.calculate_pricing(
             dimensions=request.dimensions,
             material=request.material,
@@ -27,6 +34,12 @@ async def calculate_pricing(request: ManualPricingRequest) -> PricingResult:
         return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/default-parameters", response_model=PricingParameters)
+async def get_default_parameters() -> PricingParameters:
+    """Varsayılan fiyatlandırma parametrelerini döndür"""
+    return PricingParameters()
 
 
 @router.get("/materials")

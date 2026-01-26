@@ -7,21 +7,11 @@ router = APIRouter(prefix="/api/analysis", tags=["Teknik Resim Analizi"])
 
 # Lazy initialization - will be created on first use
 _image_analyzer: ImageAnalyzer | None = None
-_pricing_engine: PricingEngine | None = None
-
-
 def get_image_analyzer() -> ImageAnalyzer:
     global _image_analyzer
     if _image_analyzer is None:
         _image_analyzer = ImageAnalyzer()
     return _image_analyzer
-
-
-def get_pricing_engine() -> PricingEngine:
-    global _pricing_engine
-    if _pricing_engine is None:
-        _pricing_engine = PricingEngine()
-    return _pricing_engine
 
 
 @router.post("/analyze", response_model=ImageAnalysisResult)
@@ -128,7 +118,8 @@ async def analyze_and_calculate_price(
     mounting_type = analysis_result.detected_mounting_type or MountingType.FLANGE
 
     # Fiyat hesapla
-    pricing_result = get_pricing_engine().calculate_pricing(
+    pricing_engine = PricingEngine()
+    pricing_result = pricing_engine.calculate_pricing(
         dimensions=analysis_result.dimensions,
         material=material,
         cylinder_type=cylinder_type,

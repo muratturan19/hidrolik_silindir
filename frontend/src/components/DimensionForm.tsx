@@ -24,6 +24,7 @@ interface DimensionFormProps {
     cylinderType: CylinderType;
     mountingType: MountingType;
     profitMargin: number;
+    parameters?: PricingParameters;
   }) => void;
   isLoading?: boolean;
 }
@@ -104,6 +105,7 @@ export function DimensionForm({
       cylinderType,
       mountingType,
       profitMargin: parseFloat(profitMargin) / 100,
+      parameters,
     });
   };
 

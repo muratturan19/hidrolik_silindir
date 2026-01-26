@@ -64,6 +64,7 @@ export function CalculatorPage({ currency, exchangeRate, parameters }: Calculato
     cylinderType: CylinderType;
     mountingType: MountingType;
     profitMargin: number;
+    parameters?: PricingParameters;
   }) => {
     setIsLoading(true);
     setError(null);
@@ -75,6 +76,7 @@ export function CalculatorPage({ currency, exchangeRate, parameters }: Calculato
         mounting_type: data.mountingType,
         quantity: 1,
         profit_margin: data.profitMargin,
+        parameters: data.parameters || parameters,
       });
       setPricingResult(result);
     } catch (err) {

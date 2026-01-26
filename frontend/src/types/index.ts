@@ -62,6 +62,7 @@ export interface ManualPricingRequest {
   mounting_type: MountingType;
   quantity: number;
   profit_margin: number;
+  parameters?: PricingParameters;
 }
 
 // Seçenek Tipi
@@ -112,7 +113,21 @@ export interface PricingParameters {
     aluminum: number;
   };
 
-  // Krom kaplama fiyatı (TL/dm²)
+  // Malzeme çarpanları (çelik = 1.0 baz)
+  material_multipliers: {
+    steel: number;
+    stainless: number;
+    aluminum: number;
+  };
+
+  // Malzeme yoğunlukları (g/cm³)
+  material_densities: {
+    steel: number;
+    stainless: number;
+    aluminum: number;
+  };
+
+  // Krom kaplama fiyatı (TL/cm²)
   chrome_plating_price: number;
 
   // İşçilik ücretleri (TL/saat)
@@ -152,6 +167,41 @@ export interface PricingParameters {
     wall_thickness: { min: number; max: number };
     working_pressure: { min: number; max: number };
   };
+
+  // Formül katsayıları - Geometri
+  geometry_coefficients: {
+    tube_extra_length: number;      // Gövde için strok + bu değer (mm)
+    rod_extra_length: number;       // Mil için strok + bu değer (mm)
+    chrome_extra_length: number;    // Krom kaplama için strok + bu değer (mm)
+    piston_seal_clearance: number;  // Piston conta payı (mm)
+    piston_thickness_ratio: number; // Piston kalınlığı = çap × bu oran
+    end_cap_thickness_ratio: number; // Kapak kalınlığı = et kalınlığı × bu oran
+  };
+
+  // Formül katsayıları - İşleme süresi
+  machining_coefficients: {
+    base_hours: number;              // Temel işleme süresi (saat)
+    bore_diameter_divisor: number;   // Çap / bu değer
+    stroke_length_divisor: number;   // Strok / bu değer
+    rod_diameter_divisor: number;    // Mil çapı / bu değer
+  };
+
+  // Formül katsayıları - Conta maliyeti
+  seal_coefficients: {
+    base_diameter: number;           // Baz çap (mm) - bu değerden fark alınır
+    diameter_divisor: number;        // Çap farkı / bu değer
+    double_acting_multiplier: number; // Çift etkili için çarpan
+  };
+
+  // Formül katsayıları - Et kalınlığı hesabı
+  wall_thickness_coefficients: {
+    stress_limit: number;            // İzin verilen gerilme (MPa)
+    safety_margin: number;           // Güvenlik payı (mm)
+    minimum_thickness: number;       // Minimum et kalınlığı (mm)
+  };
+
+  // Montaj süresi (saat)
+  assembly_hours: number;
 }
 
 // Varsayılan parametreler
@@ -161,7 +211,17 @@ export const defaultPricingParameters: PricingParameters = {
     stainless: 180,
     aluminum: 120,
   },
-  chrome_plating_price: 35,
+  material_multipliers: {
+    steel: 1.0,
+    stainless: 2.8,
+    aluminum: 1.5,
+  },
+  material_densities: {
+    steel: 7.85,
+    stainless: 8.0,
+    aluminum: 2.7,
+  },
+  chrome_plating_price: 0.35,  // TL/cm²
   labor_rates: {
     machining: 850,
     assembly: 650,
@@ -181,7 +241,7 @@ export const defaultPricingParameters: PricingParameters = {
   cylinder_type_multipliers: {
     single_acting: 0.85,
     double_acting: 1.0,
-    telescopic: 1.5,
+    telescopic: 2.5,
   },
   input_limits: {
     bore_diameter: { min: 10, max: 500 },
@@ -190,4 +250,29 @@ export const defaultPricingParameters: PricingParameters = {
     wall_thickness: { min: 3, max: 50 },
     working_pressure: { min: 50, max: 500 },
   },
+  geometry_coefficients: {
+    tube_extra_length: 100,       // Gövde için strok + 100mm
+    rod_extra_length: 150,        // Mil için strok + 150mm
+    chrome_extra_length: 50,      // Krom kaplama için strok + 50mm
+    piston_seal_clearance: 2,     // Piston conta payı 2mm
+    piston_thickness_ratio: 0.5,  // Piston kalınlığı = çap × 0.5
+    end_cap_thickness_ratio: 1.5, // Kapak kalınlığı = et kalınlığı × 1.5
+  },
+  machining_coefficients: {
+    base_hours: 2.0,              // Temel 2 saat işleme
+    bore_diameter_divisor: 50,    // Çap / 50
+    stroke_length_divisor: 300,   // Strok / 300
+    rod_diameter_divisor: 30,     // Mil çapı / 30
+  },
+  seal_coefficients: {
+    base_diameter: 40,            // 40mm baz çap
+    diameter_divisor: 100,        // Çap farkı / 100
+    double_acting_multiplier: 1.3, // Çift etkili %30 ekstra
+  },
+  wall_thickness_coefficients: {
+    stress_limit: 250,            // 250 MPa izin verilen gerilme
+    safety_margin: 3,             // 3mm güvenlik payı
+    minimum_thickness: 6,         // Minimum 6mm
+  },
+  assembly_hours: 1.5,            // 1.5 saat montaj
 };
