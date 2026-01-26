@@ -23,8 +23,7 @@ interface CalculatorPageProps {
   parameters: PricingParameters;
 }
 
-export function CalculatorPage({ currency, exchangeRate, parameters: _parameters }: CalculatorPageProps) {
-  // TODO: Pass _parameters to backend API when custom pricing is implemented
+export function CalculatorPage({ currency, exchangeRate, parameters }: CalculatorPageProps) {
   const [activeTab, setActiveTab] = useState<TabType>('manual');
   const [isLoading, setIsLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<ImageAnalysisResult | null>(null);
@@ -65,6 +64,7 @@ export function CalculatorPage({ currency, exchangeRate, parameters: _parameters
     cylinderType: CylinderType;
     mountingType: MountingType;
     profitMargin: number;
+    parameters?: PricingParameters;
   }) => {
     setIsLoading(true);
     setError(null);
@@ -76,6 +76,7 @@ export function CalculatorPage({ currency, exchangeRate, parameters: _parameters
         mounting_type: data.mountingType,
         quantity: 1,
         profit_margin: data.profitMargin,
+        parameters: data.parameters || parameters,
       });
       setPricingResult(result);
     } catch (err) {
@@ -148,6 +149,7 @@ export function CalculatorPage({ currency, exchangeRate, parameters: _parameters
                 initialMaterial={analysisResult?.detected_material}
                 initialCylinderType={analysisResult?.detected_cylinder_type}
                 initialMountingType={analysisResult?.detected_mounting_type}
+                parameters={parameters}
                 onSubmit={handleCalculatePricing}
                 isLoading={isLoading}
               />
@@ -177,6 +179,7 @@ export function CalculatorPage({ currency, exchangeRate, parameters: _parameters
                 initialMaterial={analysisResult.detected_material}
                 initialCylinderType={analysisResult.detected_cylinder_type}
                 initialMountingType={analysisResult.detected_mounting_type}
+                parameters={parameters}
                 onSubmit={handleCalculatePricing}
                 isLoading={isLoading}
               />
