@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, FileImage, X, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, FileImage, FileText, X, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import type { ImageAnalysisResult } from '../types';
 
 interface ImageUploaderProps {
@@ -99,13 +99,20 @@ export function ImageUploader({
         <div className="relative border border-gray-200 rounded-xl overflow-hidden">
           {/* Preview */}
           <div className="relative bg-gray-100">
-            {preview && (
+            {file?.type === 'application/pdf' ? (
+              // PDF için placeholder
+              <div className="w-full h-64 flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-orange-50">
+                <FileText className="h-16 w-16 text-red-500 mb-3" />
+                <span className="text-sm font-medium text-gray-700">PDF Dosyası</span>
+                <span className="text-xs text-gray-500 mt-1">{file.name}</span>
+              </div>
+            ) : preview ? (
               <img
                 src={preview}
                 alt="Teknik Resim"
                 className="w-full h-64 object-contain"
               />
-            )}
+            ) : null}
 
             {/* Clear button */}
             <button
