@@ -5,15 +5,30 @@ from ..services import ImageAnalyzer, PricingEngine
 
 router = APIRouter(prefix="/api/analysis", tags=["Teknik Resim Analizi"])
 
-image_analyzer = ImageAnalyzer()
-pricing_engine = PricingEngine()
+# Lazy initialization - will be created on first use
+_image_analyzer: ImageAnalyzer | None = None
+_pricing_engine: PricingEngine | None = None
+
+
+def get_image_analyzer() -> ImageAnalyzer:
+    global _image_analyzer
+    if _image_analyzer is None:
+        _image_analyzer = ImageAnalyzer()
+    return _image_analyzer
+
+
+def get_pricing_engine() -> PricingEngine:
+    global _pricing_engine
+    if _pricing_engine is None:
+        _pricing_engine = PricingEngine()
+    return _pricing_engine
 
 
 @router.post("/analyze", response_model=ImageAnalysisResult)
 async def analyze_image(request: ImageAnalysisRequest) -> ImageAnalysisResult:
     """Base64 kodlanmış teknik resmi analiz et"""
     try:
-        result = await image_analyzer.analyze_technical_drawing(
+        result = await get_image_analyzer().analyze_technical_drawing(
             image_base64=request.image_base64,
             file_name=request.file_name
         )
@@ -41,7 +56,7 @@ async def upload_and_analyze(file: UploadFile = File(...)) -> ImageAnalysisResul
         image_base64 = base64.b64encode(contents).decode("utf-8")
 
         # Analiz et
-        result = await image_analyzer.analyze_technical_drawing(
+        result = await get_image_analyzer().analyze_technical_drawing(
             image_base64=image_base64,
             file_name=file.filename
         )
@@ -75,7 +90,7 @@ async def analyze_and_calculate_price(
     mounting_type = analysis_result.detected_mounting_type or MountingType.FLANGE
 
     # Fiyat hesapla
-    pricing_result = pricing_engine.calculate_pricing(
+    pricing_result = get_pricing_engine().calculate_pricing(
         dimensions=analysis_result.dimensions,
         material=material,
         cylinder_type=cylinder_type,
