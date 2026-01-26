@@ -102,3 +102,76 @@ export const costLabels: Record<keyof CostBreakdown, string> = {
   assembly_cost: 'Montaj',
   mounting_cost: 'Bağlantı Elemanı'
 };
+
+// Fiyatlandırma Parametreleri
+export interface PricingParameters {
+  // Malzeme fiyatları (TL/kg)
+  material_prices: {
+    steel: number;
+    stainless: number;
+    aluminum: number;
+  };
+
+  // Krom kaplama fiyatı (TL/dm²)
+  chrome_plating_price: number;
+
+  // İşçilik ücretleri (TL/saat)
+  labor_rates: {
+    machining: number;
+    assembly: number;
+  };
+
+  // Bağlantı elemanı fiyatları (TL)
+  mounting_prices: {
+    flange: number;
+    clevis: number;
+    trunnion: number;
+    foot: number;
+    tie_rod: number;
+  };
+
+  // Conta fiyatları (çap aralığına göre TL)
+  seal_prices: {
+    small: number;   // < 50mm
+    medium: number;  // 50-100mm
+    large: number;   // > 100mm
+  };
+
+  // Silindir tipi çarpanları
+  cylinder_type_multipliers: {
+    single_acting: number;
+    double_acting: number;
+    telescopic: number;
+  };
+}
+
+// Varsayılan parametreler
+export const defaultPricingParameters: PricingParameters = {
+  material_prices: {
+    steel: 45,
+    stainless: 180,
+    aluminum: 120,
+  },
+  chrome_plating_price: 35,
+  labor_rates: {
+    machining: 850,
+    assembly: 650,
+  },
+  mounting_prices: {
+    flange: 450,
+    clevis: 380,
+    trunnion: 520,
+    foot: 320,
+    tie_rod: 280,
+  },
+  seal_prices: {
+    small: 280,
+    medium: 420,
+    large: 650,
+  },
+  cylinder_type_multipliers: {
+    single_acting: 0.85,
+    double_acting: 1.0,
+    telescopic: 1.5,
+  },
+};
