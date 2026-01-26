@@ -143,6 +143,15 @@ export interface PricingParameters {
     double_acting: number;
     telescopic: number;
   };
+
+  // Giriş limitleri
+  input_limits: {
+    bore_diameter: { min: number; max: number };
+    rod_diameter: { min: number; max: number };
+    stroke_length: { min: number; max: number };
+    wall_thickness: { min: number; max: number };
+    working_pressure: { min: number; max: number };
+  };
 }
 
 // Varsayılan parametreler
@@ -173,5 +182,12 @@ export const defaultPricingParameters: PricingParameters = {
     single_acting: 0.85,
     double_acting: 1.0,
     telescopic: 1.5,
+  },
+  input_limits: {
+    bore_diameter: { min: 10, max: 500 },
+    rod_diameter: { min: 8, max: 300 },
+    stroke_length: { min: 50, max: 6000 },
+    wall_thickness: { min: 3, max: 50 },
+    working_pressure: { min: 50, max: 500 },
   },
 };

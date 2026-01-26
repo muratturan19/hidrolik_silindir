@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, RotateCcw, Package, Wrench, Link2, Shield, Settings2 } from 'lucide-react';
+import { Save, RotateCcw, Package, Wrench, Link2, Shield, Settings2, Ruler } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import type { PricingParameters } from '../types';
@@ -63,6 +63,20 @@ export function ParametersPage({ parameters, onSave }: ParametersPageProps) {
     setLocalParams((prev) => ({
       ...prev,
       cylinder_type_multipliers: { ...prev.cylinder_type_multipliers, [type]: value },
+    }));
+  };
+
+  const updateInputLimit = (
+    field: keyof PricingParameters['input_limits'],
+    bound: 'min' | 'max',
+    value: number
+  ) => {
+    setLocalParams((prev) => ({
+      ...prev,
+      input_limits: {
+        ...prev.input_limits,
+        [field]: { ...prev.input_limits[field], [bound]: value },
+      },
     }));
   };
 
@@ -305,6 +319,157 @@ export function ParametersPage({ parameters, onSave }: ParametersPageProps) {
                 onChange={(v) => updateMultiplier('telescopic', v)}
                 suffix="×"
               />
+            </div>
+          </CardBody>
+        </Card>
+
+        {/* Giriş Limitleri */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Ruler className="h-5 w-5 text-indigo-500" />
+              <h3 className="font-semibold text-gray-900">Giriş Limitleri</h3>
+            </div>
+            <p className="text-sm text-gray-500 mt-1">
+              Ölçü girişinde izin verilen minimum ve maksimum değerler
+            </p>
+          </CardHeader>
+          <CardBody>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Silindir İç Çapı */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Silindir İç Çapı (mm)</label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      value={localParams.input_limits.bore_diameter.min}
+                      onChange={(e) => updateInputLimit('bore_diameter', 'min', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                      placeholder="Min"
+                    />
+                    <span className="text-xs text-gray-400">Min</span>
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      value={localParams.input_limits.bore_diameter.max}
+                      onChange={(e) => updateInputLimit('bore_diameter', 'max', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                      placeholder="Max"
+                    />
+                    <span className="text-xs text-gray-400">Max</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mil Çapı */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Piston Mili Çapı (mm)</label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      value={localParams.input_limits.rod_diameter.min}
+                      onChange={(e) => updateInputLimit('rod_diameter', 'min', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                      placeholder="Min"
+                    />
+                    <span className="text-xs text-gray-400">Min</span>
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      value={localParams.input_limits.rod_diameter.max}
+                      onChange={(e) => updateInputLimit('rod_diameter', 'max', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                      placeholder="Max"
+                    />
+                    <span className="text-xs text-gray-400">Max</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Strok Boyu */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Strok Boyu (mm)</label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      value={localParams.input_limits.stroke_length.min}
+                      onChange={(e) => updateInputLimit('stroke_length', 'min', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                      placeholder="Min"
+                    />
+                    <span className="text-xs text-gray-400">Min</span>
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      value={localParams.input_limits.stroke_length.max}
+                      onChange={(e) => updateInputLimit('stroke_length', 'max', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                      placeholder="Max"
+                    />
+                    <span className="text-xs text-gray-400">Max</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Et Kalınlığı */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Et Kalınlığı (mm)</label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      value={localParams.input_limits.wall_thickness.min}
+                      onChange={(e) => updateInputLimit('wall_thickness', 'min', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                      placeholder="Min"
+                    />
+                    <span className="text-xs text-gray-400">Min</span>
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      value={localParams.input_limits.wall_thickness.max}
+                      onChange={(e) => updateInputLimit('wall_thickness', 'max', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                      placeholder="Max"
+                    />
+                    <span className="text-xs text-gray-400">Max</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Çalışma Basıncı */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">Çalışma Basıncı (bar)</label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      value={localParams.input_limits.working_pressure.min}
+                      onChange={(e) => updateInputLimit('working_pressure', 'min', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                      placeholder="Min"
+                    />
+                    <span className="text-xs text-gray-400">Min</span>
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      value={localParams.input_limits.working_pressure.max}
+                      onChange={(e) => updateInputLimit('working_pressure', 'max', parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm"
+                      placeholder="Max"
+                    />
+                    <span className="text-xs text-gray-400">Max</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </CardBody>
         </Card>

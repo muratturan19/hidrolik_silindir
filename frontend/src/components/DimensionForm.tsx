@@ -8,13 +8,16 @@ import type {
   MaterialType,
   CylinderType,
   MountingType,
+  PricingParameters,
 } from '../types';
+import { defaultPricingParameters } from '../types';
 
 interface DimensionFormProps {
   initialDimensions?: CylinderDimensions;
   initialMaterial?: MaterialType;
   initialCylinderType?: CylinderType;
   initialMountingType?: MountingType;
+  parameters?: PricingParameters;
   onSubmit: (data: {
     dimensions: CylinderDimensions;
     material: MaterialType;
@@ -50,9 +53,12 @@ export function DimensionForm({
   initialMaterial,
   initialCylinderType,
   initialMountingType,
+  parameters = defaultPricingParameters,
   onSubmit,
   isLoading = false,
 }: DimensionFormProps) {
+  const limits = parameters.input_limits;
+
   const [boreDiameter, setBoreDiameter] = useState<string>('');
   const [rodDiameter, setRodDiameter] = useState<string>('');
   const [strokeLength, setStrokeLength] = useState<string>('');
@@ -124,8 +130,8 @@ export function DimensionForm({
             suffix="mm"
             icon={<Circle className="h-4 w-4" />}
             required
-            min={10}
-            max={500}
+            min={limits.bore_diameter.min}
+            max={limits.bore_diameter.max}
           />
           <Input
             label="Piston Mili Çapı"
@@ -136,8 +142,8 @@ export function DimensionForm({
             suffix="mm"
             icon={<Circle className="h-4 w-4" />}
             required
-            min={8}
-            max={300}
+            min={limits.rod_diameter.min}
+            max={limits.rod_diameter.max}
           />
           <Input
             label="Strok Boyu"
@@ -148,8 +154,8 @@ export function DimensionForm({
             suffix="mm"
             icon={<ArrowUpDown className="h-4 w-4" />}
             required
-            min={50}
-            max={5000}
+            min={limits.stroke_length.min}
+            max={limits.stroke_length.max}
           />
         </div>
       </div>
@@ -168,8 +174,8 @@ export function DimensionForm({
             onChange={(e) => setWallThickness(e.target.value)}
             placeholder="Otomatik hesaplanır"
             suffix="mm"
-            min={3}
-            max={50}
+            min={limits.wall_thickness.min}
+            max={limits.wall_thickness.max}
           />
           <Input
             label="Çalışma Basıncı"
@@ -179,8 +185,8 @@ export function DimensionForm({
             placeholder="160"
             suffix="bar"
             icon={<Gauge className="h-4 w-4" />}
-            min={50}
-            max={500}
+            min={limits.working_pressure.min}
+            max={limits.working_pressure.max}
           />
         </div>
       </div>
