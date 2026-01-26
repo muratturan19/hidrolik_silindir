@@ -180,7 +180,7 @@ export function DimensionForm({
             suffix="bar"
             icon={<Gauge className="h-4 w-4" />}
             min={50}
-            max={350}
+            max={500}
           />
         </div>
       </div>
