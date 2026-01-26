@@ -340,8 +340,7 @@ EĞER ölçüler okunamıyorsa:
                         ]
                     }
                 ],
-                max_completion_tokens=2000,
-                reasoning={"effort": "high"}
+                max_tokens=4000
             )
 
             result_text = response.choices[0].message.content
@@ -393,8 +392,7 @@ EĞER ölçüler okunamıyorsa:
                         ]
                     }
                 ],
-                max_completion_tokens=2000,
-                reasoning={"effort": "high"}
+                max_tokens=4000
             )
 
             result_text = response.choices[0].message.content
