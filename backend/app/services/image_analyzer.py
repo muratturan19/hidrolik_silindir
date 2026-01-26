@@ -13,9 +13,13 @@ Strateji:
 import json
 import re
 import base64
+import logging
 from typing import Optional
 from dataclasses import dataclass
 from openai import AsyncOpenAI
+
+# Logging setup
+logger = logging.getLogger(__name__)
 from ..models import (
     CylinderDimensions,
     MaterialType,
@@ -310,9 +314,11 @@ EĞER ölçüler okunamıyorsa:
     async def _analyze_with_native_pdf(self, pdf_bytes: bytes, context: str = "") -> AnalysisStep:
         """GPT-5.2 native PDF desteği ile analiz"""
         step = AnalysisStep(step_name="native_pdf_analysis", success=False)
+        logger.info(f"Starting native PDF analysis, bytes size: {len(pdf_bytes)}")
 
         try:
             pdf_base64 = base64.b64encode(pdf_bytes).decode('utf-8')
+            logger.info(f"PDF encoded to base64, model: {self.model}")
 
             response = await self.client.chat.completions.create(
                 model=self.model,
@@ -340,15 +346,19 @@ EĞER ölçüler okunamıyorsa:
             )
 
             result_text = response.choices[0].message.content
+            logger.info(f"Native PDF response received: {result_text[:500]}...")
             step.data = self._parse_llm_response(result_text)
             step.success = step.data.get("success", False)
             step.confidence = step.data.get("confidence", 0)
+            logger.info(f"Native PDF analysis result: success={step.success}, confidence={step.confidence}")
 
         except Exception as e:
             step.error = str(e)
+            logger.error(f"Native PDF analysis error: {e}")
             # Native PDF desteklenmiyorsa, alternatif yönteme geç
             if "file" in str(e).lower() or "unsupported" in str(e).lower():
                 step.error = "Native PDF not supported, will fallback to image"
+                logger.info("Will fallback to image-based analysis")
 
         return step
 
@@ -360,6 +370,7 @@ EĞER ölçüler okunamıyorsa:
     ) -> AnalysisStep:
         """GPT-5.2 Vision API ile görüntü analizi"""
         step = AnalysisStep(step_name="vision_analysis", success=False)
+        logger.info(f"Starting vision analysis, mime_type: {mime_type}, image_size: {len(image_base64)}")
 
         try:
             response = await self.client.chat.completions.create(
@@ -388,12 +399,15 @@ EĞER ölçüler okunamıyorsa:
             )
 
             result_text = response.choices[0].message.content
+            logger.info(f"Vision response received: {result_text[:500]}...")
             step.data = self._parse_llm_response(result_text)
             step.success = step.data.get("success", False)
             step.confidence = step.data.get("confidence", 0)
+            logger.info(f"Vision analysis result: success={step.success}, confidence={step.confidence}")
 
         except Exception as e:
             step.error = str(e)
+            logger.error(f"Vision analysis error: {e}")
 
         return step
 
@@ -530,12 +544,15 @@ EĞER ölçüler okunamıyorsa:
         3. Görüntü ise: Direkt Vision analizi
         4. Sonuçları birleştir ve doğrula
         """
+        logger.info(f"=== Starting analysis: file={file_name}, mime={mime_type}, size={len(file_bytes)} bytes ===")
+
         self.analysis_steps = []
         pdf_data = None
         context = ""
 
         # Dosya tipini belirle
         is_pdf = mime_type == "application/pdf" or file_name.lower().endswith('.pdf')
+        logger.info(f"File type detected: is_pdf={is_pdf}")
 
         if is_pdf:
             # Adım 1: PDF'den metin çıkar
@@ -585,10 +602,17 @@ EĞER ölçüler okunamıyorsa:
             self.analysis_steps.append(vision_step)
 
         # Sonuçları birleştir
+        logger.info(f"Merging {len(self.analysis_steps)} analysis steps")
+        for step in self.analysis_steps:
+            logger.info(f"  Step '{step.step_name}': success={step.success}, confidence={step.confidence}, error={step.error}")
+
         final_result = self._merge_results(self.analysis_steps, pdf_data)
+        logger.info(f"Final merged result: success={final_result.get('success')}, sources={final_result.get('sources')}")
 
         # ImageAnalysisResult'a dönüştür
-        return self._to_analysis_result(final_result)
+        result = self._to_analysis_result(final_result)
+        logger.info(f"=== Analysis complete: success={result.success} ===")
+        return result
 
     def _to_analysis_result(self, merged: dict) -> ImageAnalysisResult:
         """Birleştirilmiş sonucu ImageAnalysisResult'a dönüştür"""
