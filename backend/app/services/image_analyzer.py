@@ -312,39 +312,50 @@ EĞER ölçüler okunamıyorsa:
         return title_block
 
     async def _analyze_with_native_pdf(self, pdf_bytes: bytes, context: str = "") -> AnalysisStep:
-        """GPT-5.2 native PDF desteği ile analiz"""
+        """GPT-5.2 Responses API ile native PDF analizi"""
         step = AnalysisStep(step_name="native_pdf_analysis", success=False)
-        logger.info(f"Starting native PDF analysis, bytes size: {len(pdf_bytes)}")
+        logger.info(f"Starting native PDF analysis with Responses API, bytes size: {len(pdf_bytes)}")
 
+        uploaded_file = None
         try:
-            pdf_base64 = base64.b64encode(pdf_bytes).decode('utf-8')
-            logger.info(f"PDF encoded to base64, model: {self.model}")
+            # 1. PDF dosyasını yükle
+            import io
+            pdf_file = io.BytesIO(pdf_bytes)
+            pdf_file.name = "technical_drawing.pdf"
 
-            response = await self.client.chat.completions.create(
+            logger.info("Uploading PDF file to OpenAI...")
+            uploaded_file = await self.client.files.create(
+                file=pdf_file,
+                purpose="user_data"
+            )
+            logger.info(f"PDF uploaded successfully, file_id: {uploaded_file.id}")
+
+            # 2. Responses API ile analiz
+            system_prompt = self._create_system_prompt(context)
+
+            response = await self.client.responses.create(
                 model=self.model,
-                messages=[
-                    {"role": "system", "content": self._create_system_prompt(context)},
+                instructions=system_prompt,
+                input=[
                     {
                         "role": "user",
                         "content": [
                             {
-                                "type": "text",
+                                "type": "input_text",
                                 "text": "Bu PDF teknik resimden hidrolik silindir ölçülerini çıkar."
                             },
                             {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:application/pdf;base64,{pdf_base64}"
-                                }
+                                "type": "input_file",
+                                "file_id": uploaded_file.id
                             }
                         ]
                     }
                 ],
-                max_completion_tokens=2000,
-                reasoning={"effort": "high"}
+                reasoning={"effort": "high"},
+                max_output_tokens=4000
             )
 
-            result_text = response.choices[0].message.content
+            result_text = response.output_text
             logger.info(f"Native PDF response received: {result_text[:500]}...")
             step.data = self._parse_llm_response(result_text)
             step.success = step.data.get("success", False)
@@ -359,6 +370,15 @@ EĞER ölçüler okunamıyorsa:
                 step.error = "Native PDF not supported, will fallback to image"
                 logger.info("Will fallback to image-based analysis")
 
+        finally:
+            # Yüklenen dosyayı temizle (opsiyonel)
+            if uploaded_file:
+                try:
+                    await self.client.files.delete(uploaded_file.id)
+                    logger.info(f"Cleaned up uploaded file: {uploaded_file.id}")
+                except Exception as cleanup_err:
+                    logger.warning(f"Failed to cleanup file: {cleanup_err}")
+
         return step
 
     async def _analyze_with_vision(
@@ -367,37 +387,59 @@ EĞER ölçüler okunamıyorsa:
         mime_type: str = "image/png",
         context: str = ""
     ) -> AnalysisStep:
-        """GPT-5.2 Vision API ile görüntü analizi"""
+        """GPT-5.2 Responses API ile görüntü analizi"""
         step = AnalysisStep(step_name="vision_analysis", success=False)
-        logger.info(f"Starting vision analysis, mime_type: {mime_type}, image_size: {len(image_base64)}")
+        logger.info(f"Starting vision analysis with Responses API, mime_type: {mime_type}, image_size: {len(image_base64)}")
 
+        uploaded_file = None
         try:
-            response = await self.client.chat.completions.create(
+            # 1. Görüntüyü bytes'a çevir ve yükle
+            import io
+            image_bytes = base64.b64decode(image_base64)
+
+            # Dosya uzantısını belirle
+            ext = "png"
+            if "jpeg" in mime_type or "jpg" in mime_type:
+                ext = "jpg"
+            elif "webp" in mime_type:
+                ext = "webp"
+
+            image_file = io.BytesIO(image_bytes)
+            image_file.name = f"technical_drawing.{ext}"
+
+            logger.info("Uploading image file to OpenAI...")
+            uploaded_file = await self.client.files.create(
+                file=image_file,
+                purpose="vision"
+            )
+            logger.info(f"Image uploaded successfully, file_id: {uploaded_file.id}")
+
+            # 2. Responses API ile analiz
+            system_prompt = self._create_system_prompt(context)
+
+            response = await self.client.responses.create(
                 model=self.model,
-                messages=[
-                    {"role": "system", "content": self._create_system_prompt(context)},
+                instructions=system_prompt,
+                input=[
                     {
                         "role": "user",
                         "content": [
                             {
-                                "type": "text",
+                                "type": "input_text",
                                 "text": "Bu teknik resimden hidrolik silindir ölçülerini çıkar."
                             },
                             {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:{mime_type};base64,{image_base64}",
-                                    "detail": "high"
-                                }
+                                "type": "input_image",
+                                "file_id": uploaded_file.id
                             }
                         ]
                     }
                 ],
-                max_completion_tokens=2000,
-                reasoning={"effort": "high"}
+                reasoning={"effort": "high"},
+                max_output_tokens=4000
             )
 
-            result_text = response.choices[0].message.content
+            result_text = response.output_text
             logger.info(f"Vision response received: {result_text[:500]}...")
             step.data = self._parse_llm_response(result_text)
             step.success = step.data.get("success", False)
@@ -407,6 +449,15 @@ EĞER ölçüler okunamıyorsa:
         except Exception as e:
             step.error = str(e)
             logger.error(f"Vision analysis error: {e}")
+
+        finally:
+            # Yüklenen dosyayı temizle
+            if uploaded_file:
+                try:
+                    await self.client.files.delete(uploaded_file.id)
+                    logger.info(f"Cleaned up uploaded file: {uploaded_file.id}")
+                except Exception as cleanup_err:
+                    logger.warning(f"Failed to cleanup file: {cleanup_err}")
 
         return step
 
