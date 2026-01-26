@@ -8,3 +8,7 @@ pillow==11.0.0
 python-dotenv==1.0.1
 aiofiles==24.1.0
 httpx==0.28.0
+
+# PDF işleme
+PyMuPDF>=1.24.0
+pdfplumber>=0.11.0
