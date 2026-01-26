@@ -1,9 +1,18 @@
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .config import get_settings
 from .routers import pricing_router, analysis_router
 
+# Logging configuration
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 settings = get_settings()
+logger.info(f"Starting {settings.app_name}")
 
 app = FastAPI(
     title=settings.app_name,

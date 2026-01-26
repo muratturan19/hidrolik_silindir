@@ -1,7 +1,11 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
 import base64
+import logging
+import traceback
 from ..models import ImageAnalysisRequest, ImageAnalysisResult, PricingResult
 from ..services import ImageAnalyzer, PricingEngine
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/analysis", tags=["Teknik Resim Analizi"])
 
@@ -62,6 +66,7 @@ async def upload_and_analyze(file: UploadFile = File(...)) -> ImageAnalysisResul
     try:
         # Dosyayı oku
         contents = await file.read()
+        logger.info(f"File uploaded: {file.filename}, size: {len(contents)} bytes, type: {file.content_type}")
 
         # Yeni analyze metodunu kullan (bytes ile çalışır)
         analyzer = get_image_analyzer()
@@ -70,9 +75,15 @@ async def upload_and_analyze(file: UploadFile = File(...)) -> ImageAnalysisResul
             file_name=file.filename or "",
             mime_type=file.content_type or ""
         )
+
+        logger.info(f"Analysis result: success={result.success}, confidence={result.confidence}")
+        if not result.success:
+            logger.warning(f"Analysis failed: {result.error_message}")
+
         return result
 
     except Exception as e:
+        logger.error(f"Upload analysis error: {e}\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
