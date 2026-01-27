@@ -11,6 +11,7 @@ import {
   Shield,
   ChevronDown,
   Lock,
+  Users,
 } from 'lucide-react';
 import { PasswordModal, isAdminAuthenticated } from '../ui/PasswordModal';
 
@@ -42,6 +43,11 @@ const adminNavItems = [
     path: '/excel-settings',
     icon: Table2,
     label: 'Excel Tablosu',
+  },
+  {
+    path: '/users',
+    icon: Users,
+    label: 'Kullanıcılar',
   },
 ];
 
