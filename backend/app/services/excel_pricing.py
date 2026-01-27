@@ -398,6 +398,24 @@ class ExcelPricingService:
             PRICING_DATA_FILE.unlink()
         logger.info("Pricing data cleared")
 
+    def update_columns(self, columns_data: list):
+        """Frontend'den gelen güncellenmiş sütunları kaydet"""
+        columns = [
+            PricingColumn(
+                name=col.get("name", self._slugify(col.get("display_name", "unknown"))),
+                display_name=col.get("display_name", "Unknown"),
+                options=col.get("options", [])
+            )
+            for col in columns_data
+        ]
+
+        self._pricing_table = PricingTable(
+            columns=columns,
+            metadata={"format": "manual_edit", "updated": True}
+        )
+        self._save_data()
+        logger.info(f"Updated pricing data with {len(columns)} columns")
+
 
 # Singleton instance
 _service: Optional[ExcelPricingService] = None

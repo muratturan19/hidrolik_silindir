@@ -141,6 +141,27 @@ async def clear_pricing_data() -> Dict[str, Any]:
     }
 
 
+class UpdateColumnsRequest(BaseModel):
+    """Sütun güncelleme isteği"""
+    columns: list
+
+
+@router.post("/update")
+async def update_pricing_data(request: UpdateColumnsRequest) -> Dict[str, Any]:
+    """Fiyat tablosunu güncelle (frontend'den düzenleme sonrası)"""
+    service = get_excel_pricing_service()
+
+    try:
+        service.update_columns(request.columns)
+        return {
+            "success": True,
+            "message": "Fiyat tablosu güncellendi"
+        }
+    except Exception as e:
+        logger.error(f"Update error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/status")
 async def get_status() -> Dict[str, Any]:
     """Fiyat tablosu durumunu kontrol et"""

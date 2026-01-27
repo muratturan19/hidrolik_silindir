@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout';
-import { CalculatorPage, ParametersPage } from './pages';
+import { CalculatorPage, ParametersPage, ExcelSettingsPage } from './pages';
 import type { PricingParameters } from './types';
 import { defaultPricingParameters } from './types';
 
@@ -122,6 +122,10 @@ function App() {
                 onSave={handleParametersSave}
               />
             }
+          />
+          <Route
+            path="excel-settings"
+            element={<ExcelSettingsPage />}
           />
           <Route
             path="history"
