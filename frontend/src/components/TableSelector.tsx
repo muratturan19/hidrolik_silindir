@@ -50,14 +50,17 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
   const loadOptions = async () => {
     try {
       const result = await getExcelPricingOptions();
-      if (result.success) {
+      if (result.success && result.columns && result.columns.length > 0) {
         setColumns(result.columns);
         setTableLoaded(true);
         // Varsayılan seçimleri ayarla (boş - kullanıcı seçsin)
         const defaultSelections: Record<string, string> = {};
         setSelections(defaultSelections);
+      } else {
+        setTableLoaded(false);
       }
     } catch {
+      setTableLoaded(false);
       setError('Seçenekler yüklenirken hata oluştu');
     }
   };
@@ -112,8 +115,8 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
     );
   }
 
-  // Excel yüklenmemişse bilgi göster
-  if (!tableLoaded) {
+  // Excel yüklenmemişse veya sütunlar boşsa bilgi göster
+  if (!tableLoaded || columns.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="p-4 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full inline-block mb-4">
