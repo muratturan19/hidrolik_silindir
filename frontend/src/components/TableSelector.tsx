@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Table2, Loader2, AlertCircle, Calculator, Info, Ruler } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Loader2, AlertCircle, Calculator, Ruler } from 'lucide-react';
 import {
   getExcelPricingOptions,
   getExcelPricingStatus,
@@ -19,49 +18,31 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
   const [isCalculating, setIsCalculating] = useState(false);
   const [columns, setColumns] = useState<ExcelPricingColumn[]>([]);
   const [selections, setSelections] = useState<Record<string, string>>({});
-  const [strokeMm, setStrokeMm] = useState<number>(500); // Varsayılan strok
+  const [strokeMm, setStrokeMm] = useState<number>(500);
   const [priceResult, setPriceResult] = useState<ExcelPriceResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [tableLoaded, setTableLoaded] = useState(false);
 
   // Metre bazlı sütun var mı kontrol et
   const hasMeterBasedColumn = columns.some(col => col.is_meter_based);
 
   useEffect(() => {
-    checkTableStatus();
+    loadOptions();
   }, []);
 
-  const checkTableStatus = async () => {
+  const loadOptions = async () => {
     setIsLoading(true);
     try {
       const status = await getExcelPricingStatus();
       if (status.loaded) {
-        await loadOptions();
-      } else {
-        setTableLoaded(false);
+        const result = await getExcelPricingOptions();
+        if (result.success && result.columns) {
+          setColumns(result.columns);
+        }
       }
     } catch {
-      setTableLoaded(false);
+      // Sessizce hata - dropdown'lar boş kalacak
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const loadOptions = async () => {
-    try {
-      const result = await getExcelPricingOptions();
-      if (result.success && result.columns && result.columns.length > 0) {
-        setColumns(result.columns);
-        setTableLoaded(true);
-        // Varsayılan seçimleri ayarla (boş - kullanıcı seçsin)
-        const defaultSelections: Record<string, string> = {};
-        setSelections(defaultSelections);
-      } else {
-        setTableLoaded(false);
-      }
-    } catch {
-      setTableLoaded(false);
-      setError('Seçenekler yüklenirken hata oluştu');
     }
   };
 
@@ -70,7 +51,6 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
       ...prev,
       [columnName]: value,
     }));
-    // Seçim değişince sonucu temizle
     setPriceResult(null);
   };
 
@@ -89,24 +69,19 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
   };
 
   const formatPrice = (price: number, resultCurrency?: string) => {
-    // Backend EUR döndürüyor, görüntüleme ayarına göre çevir
     const priceCurrency = resultCurrency || 'EUR';
-
     if (currency === 'TRY' && priceCurrency === 'EUR') {
       const converted = price * exchangeRate;
       return `₺${converted.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
-    } else {
-      return `€${price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
     }
+    return `€${price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
   };
 
-  // Seçilen değerin fiyatını bul
   const getSelectedPrice = (column: ExcelPricingColumn, selectedValue: string): number => {
     const option = column.options.find(opt => opt.value === selectedValue);
     return option?.price || 0;
   };
 
-  // Yükleniyor
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -115,33 +90,16 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
     );
   }
 
-  // Excel yüklenmemişse veya sütunlar boşsa bilgi göster
-  if (!tableLoaded || columns.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <div className="p-4 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full inline-block mb-4">
-          <Info className="h-8 w-8 text-amber-600" />
-        </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          Fiyat Tablosu Yüklenmemiş
-        </h3>
-        <p className="text-gray-500 mb-4">
-          Bu özelliği kullanmak için önce Excel fiyat tablosu yüklemeniz gerekiyor
-        </p>
-        <Link
-          to="/excel-settings"
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors font-medium"
-        >
-          <Table2 className="h-4 w-4" />
-          Excel Tablosu Yükle
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      {/* Strok Girişi (metre bazlı sütun varsa) */}
+      {/* Veri yoksa uyarı */}
+      {columns.length === 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-700">
+          Excel tablosu yüklenmemiş. Yönetim → Excel Tablosu bölümünden yükleyebilirsiniz.
+        </div>
+      )}
+
+      {/* Strok Girişi */}
       {hasMeterBasedColumn && (
         <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
           <label className="flex items-center gap-2 text-sm font-medium text-blue-700 mb-2">
@@ -167,64 +125,68 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
       )}
 
       {/* Dropdown Seçiciler */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {columns.map((column) => {
-          const selectedValue = selections[column.name];
-          const selectedPrice = selectedValue ? getSelectedPrice(column, selectedValue) : 0;
+      {columns.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {columns.map((column) => {
+            const selectedValue = selections[column.name];
+            const selectedPrice = selectedValue ? getSelectedPrice(column, selectedValue) : 0;
 
-          return (
-            <div key={column.name} className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                {column.display_name}
-                {column.is_meter_based && (
-                  <span className="ml-1 text-xs text-blue-500 font-normal">(€/m)</span>
+            return (
+              <div key={column.name} className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  {column.display_name}
+                  {column.is_meter_based && (
+                    <span className="ml-1 text-xs text-blue-500 font-normal">(€/m)</span>
+                  )}
+                </label>
+                <select
+                  value={selectedValue || ''}
+                  onChange={(e) => handleSelectionChange(column.name, e.target.value)}
+                  className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white text-sm ${
+                    selectedValue ? 'border-emerald-300' : 'border-gray-200'
+                  }`}
+                >
+                  <option value="">Seçiniz...</option>
+                  {column.options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label} {option.price > 0 && `- ${option.price.toFixed(2)} €${column.is_meter_based ? '/m' : ''}`}
+                    </option>
+                  ))}
+                </select>
+                {selectedValue && selectedPrice > 0 && (
+                  <div className="mt-1 text-xs text-emerald-600 font-medium">
+                    {column.is_meter_based
+                      ? `${selectedPrice.toFixed(2)} €/m × ${((strokeMm + (column.formula_add_mm || 0)) / 1000).toFixed(3)} m`
+                      : `${selectedPrice.toFixed(2)} €`
+                    }
+                  </div>
                 )}
-              </label>
-              <select
-                value={selectedValue || ''}
-                onChange={(e) => handleSelectionChange(column.name, e.target.value)}
-                className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white text-sm ${
-                  selectedValue ? 'border-emerald-300' : 'border-gray-200'
-                }`}
-              >
-                <option value="">Seçiniz...</option>
-                {column.options.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label} {option.price > 0 && `- ${option.price.toFixed(2)} €${column.is_meter_based ? '/m' : ''}`}
-                  </option>
-                ))}
-              </select>
-              {selectedValue && selectedPrice > 0 && (
-                <div className="mt-1 text-xs text-emerald-600 font-medium">
-                  {column.is_meter_based
-                    ? `${selectedPrice.toFixed(2)} €/m × ${((strokeMm + (column.formula_add_mm || 0)) / 1000).toFixed(3)} m`
-                    : `${selectedPrice.toFixed(2)} €`
-                  }
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Hesapla Butonu */}
-      <button
-        onClick={handleCalculate}
-        disabled={isCalculating || Object.keys(selections).length === 0}
-        className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/25"
-      >
-        {isCalculating ? (
-          <>
-            <Loader2 className="h-5 w-5 animate-spin" />
-            Hesaplanıyor...
-          </>
-        ) : (
-          <>
-            <Calculator className="h-5 w-5" />
-            Fiyat Hesapla
-          </>
-        )}
-      </button>
+      {columns.length > 0 && (
+        <button
+          onClick={handleCalculate}
+          disabled={isCalculating || Object.keys(selections).length === 0}
+          className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/25"
+        >
+          {isCalculating ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Hesaplanıyor...
+            </>
+          ) : (
+            <>
+              <Calculator className="h-5 w-5" />
+              Fiyat Hesapla
+            </>
+          )}
+        </button>
+      )}
 
       {/* Hata */}
       {error && (
@@ -261,9 +223,7 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
                     <td className="py-2.5 text-right text-gray-500">
                       {item.unit_price.toFixed(2)} {item.unit}
                       {item.length_m && (
-                        <div className="text-xs text-blue-500">
-                          × {item.length_m} m
-                        </div>
+                        <div className="text-xs text-blue-500">× {item.length_m} m</div>
                       )}
                     </td>
                     <td className="py-2.5 text-right font-semibold text-gray-900">
@@ -274,9 +234,7 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
               </tbody>
               <tfoot>
                 <tr className="border-t-2 border-gray-200">
-                  <td colSpan={3} className="pt-3 text-lg font-semibold text-gray-900">
-                    Toplam
-                  </td>
+                  <td colSpan={3} className="pt-3 text-lg font-semibold text-gray-900">Toplam</td>
                   <td className="pt-3 text-right text-2xl font-bold text-emerald-600">
                     {formatPrice(priceResult.total, priceResult.currency)}
                   </td>
@@ -284,7 +242,6 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
               </tfoot>
             </table>
 
-            {/* Formül Detayları */}
             {priceResult.items.some(item => item.formula) && (
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <p className="text-xs text-gray-400 font-medium mb-2">Hesaplama Formülleri:</p>
@@ -300,17 +257,6 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
           </div>
         </div>
       )}
-
-      {/* Tablo Düzenleme Linki */}
-      <div className="pt-4 border-t border-gray-200">
-        <Link
-          to="/excel-settings"
-          className="text-sm text-gray-500 hover:text-emerald-600 flex items-center gap-1"
-        >
-          <Table2 className="h-4 w-4" />
-          Fiyat tablosunu düzenle
-        </Link>
-      </div>
     </div>
   );
 }
