@@ -142,13 +142,34 @@ class ExcelPricingService:
             return True, 100  # Mil boyu = Strok + 100mm
         return False, 0
 
+    def _find_header_row(self, df: pd.DataFrame) -> int:
+        """Başlık satırını bul - FİYAT, ÖLÇÜ, BORU gibi anahtar kelimeleri ara"""
+        keywords = ['fiyat', 'ölçü', 'boru', 'mil', 'kapak', 'piston', 'keçe', 'burç']
+
+        for idx, row in df.iterrows():
+            row_text = ' '.join(str(v).lower() for v in row.values if pd.notna(v))
+            matches = sum(1 for kw in keywords if kw in row_text)
+            if matches >= 2:  # En az 2 anahtar kelime varsa bu başlık satırı
+                logger.info(f"Header row found at index {idx}: {list(row.values)}")
+                return idx
+        return 0  # Bulunamazsa 0 döndür
+
     def parse_excel(self, file_bytes: bytes, filename: str) -> dict:
         """Excel dosyasını parse et"""
         import io
 
         try:
-            # Excel'i oku - header=0 ile ilk satırı başlık olarak al
-            df = pd.read_excel(io.BytesIO(file_bytes), engine='openpyxl', header=0)
+            # Önce header olmadan oku, başlık satırını bul
+            df_raw = pd.read_excel(io.BytesIO(file_bytes), engine='openpyxl', header=None)
+            logger.info(f"Raw Excel: {df_raw.shape[0]} rows, {df_raw.shape[1]} columns")
+            logger.info(f"First 3 rows:\n{df_raw.head(3).to_string()}")
+
+            # Başlık satırını bul
+            header_row = self._find_header_row(df_raw)
+            logger.info(f"Using header row: {header_row}")
+
+            # Şimdi doğru başlık satırıyla tekrar oku
+            df = pd.read_excel(io.BytesIO(file_bytes), engine='openpyxl', header=header_row)
 
             logger.info(f"Excel loaded: {df.shape[0]} rows, {df.shape[1]} columns")
             logger.info(f"All columns: {list(df.columns)}")
