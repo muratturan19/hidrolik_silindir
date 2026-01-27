@@ -4,6 +4,7 @@ import {
   Settings,
   Cylinder,
   FileText,
+  Table2,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
@@ -23,6 +24,11 @@ const navItems = [
     path: '/parameters',
     icon: Settings,
     label: 'Parametreler',
+  },
+  {
+    path: '/excel-settings',
+    icon: Table2,
+    label: 'Excel Tablosu',
   },
   {
     path: '/history',
