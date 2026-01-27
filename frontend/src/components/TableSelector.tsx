@@ -22,8 +22,6 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
   const [priceResult, setPriceResult] = useState<ExcelPriceResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Metre bazlı sütun var mı kontrol et
-  const hasMeterBasedColumn = columns.some(col => col.is_meter_based);
 
   useEffect(() => {
     loadOptions();
@@ -77,11 +75,6 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
     return `€${price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
   };
 
-  const getSelectedPrice = (column: ExcelPricingColumn, selectedValue: string): number => {
-    const option = column.options.find(opt => opt.value === selectedValue);
-    return option?.price || 0;
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -99,8 +92,8 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
         </div>
       )}
 
-      {/* Strok Girişi */}
-      {hasMeterBasedColumn && (
+      {/* Strok Girişi - Her zaman göster */}
+      {columns.length > 0 && (
         <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
           <label className="flex items-center gap-2 text-sm font-medium text-blue-700 mb-2">
             <Ruler className="h-4 w-4" />
@@ -115,52 +108,43 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
             }}
             min={0}
             step={10}
-            className="w-full px-4 py-2.5 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+            className="w-full px-4 py-2.5 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-lg font-medium"
             placeholder="Strok uzunluğunu girin (mm)"
           />
           <p className="mt-2 text-xs text-blue-600">
-            Boru ve mil uzunlukları strok değerine göre hesaplanır
+            Boru: Strok + 120mm | Mil: Strok + 150mm
           </p>
         </div>
       )}
 
-      {/* Dropdown Seçiciler */}
+      {/* Dropdown Seçiciler - Sadece ölçüler görünür, fiyatlar gizli */}
       {columns.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {columns.map((column) => {
             const selectedValue = selections[column.name];
-            const selectedPrice = selectedValue ? getSelectedPrice(column, selectedValue) : 0;
 
             return (
               <div key={column.name} className="relative">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   {column.display_name}
                   {column.is_meter_based && (
-                    <span className="ml-1 text-xs text-blue-500 font-normal">(€/m)</span>
+                    <span className="ml-1 text-xs text-blue-500 font-normal">(metre bazlı)</span>
                   )}
                 </label>
                 <select
                   value={selectedValue || ''}
                   onChange={(e) => handleSelectionChange(column.name, e.target.value)}
                   className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white text-sm ${
-                    selectedValue ? 'border-emerald-300' : 'border-gray-200'
+                    selectedValue ? 'border-emerald-300 bg-emerald-50' : 'border-gray-200'
                   }`}
                 >
                   <option value="">Seçiniz...</option>
                   {column.options.map((option) => (
                     <option key={option.value} value={option.value}>
-                      {option.label} {option.price > 0 && `- ${option.price.toFixed(2)} €${column.is_meter_based ? '/m' : ''}`}
+                      {option.label}
                     </option>
                   ))}
                 </select>
-                {selectedValue && selectedPrice > 0 && (
-                  <div className="mt-1 text-xs text-emerald-600 font-medium">
-                    {column.is_meter_based
-                      ? `${selectedPrice.toFixed(2)} €/m × ${((strokeMm + (column.formula_add_mm || 0)) / 1000).toFixed(3)} m`
-                      : `${selectedPrice.toFixed(2)} €`
-                    }
-                  </div>
-                )}
               </div>
             );
           })}
