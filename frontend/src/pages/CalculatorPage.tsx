@@ -89,7 +89,7 @@ export function CalculatorPage({ currency, exchangeRate, parameters }: Calculato
   };
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <div className={`grid gap-6 ${activeTab === 'table' ? 'grid-cols-1' : 'grid-cols-1 xl:grid-cols-2'}`}>
       {/* Sol Panel - Giriş */}
       <div className="space-y-6">
         {/* Tab Seçimi */}
@@ -214,27 +214,29 @@ export function CalculatorPage({ currency, exchangeRate, parameters }: Calculato
         )}
       </div>
 
-      {/* Sağ Panel - Sonuç */}
-      <div className="space-y-6">
-        {pricingResult ? (
-          <PricingResultCard
-            result={pricingResult}
-            currency={currency}
-            exchangeRate={exchangeRate}
-          />
-        ) : (
-          <Card className="h-96 flex items-center justify-center">
-            <div className="text-center">
-              <div className="p-4 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full inline-block mb-4">
-                <Calculator className="h-8 w-8 text-indigo-500" />
+      {/* Sağ Panel - Sonuç (sadece upload ve manual tabları için) */}
+      {activeTab !== 'table' && (
+        <div className="space-y-6">
+          {pricingResult ? (
+            <PricingResultCard
+              result={pricingResult}
+              currency={currency}
+              exchangeRate={exchangeRate}
+            />
+          ) : (
+            <Card className="h-96 flex items-center justify-center">
+              <div className="text-center">
+                <div className="p-4 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full inline-block mb-4">
+                  <Calculator className="h-8 w-8 text-indigo-500" />
+                </div>
+                <p className="text-gray-500">
+                  Fiyat hesaplamak için teknik resim yükleyin veya ölçüleri girin
+                </p>
               </div>
-              <p className="text-gray-500">
-                Fiyat hesaplamak için teknik resim yükleyin veya ölçüleri girin
-              </p>
-            </div>
-          </Card>
-        )}
-      </div>
+            </Card>
+          )}
+        </div>
+      )}
     </div>
   );
 }
