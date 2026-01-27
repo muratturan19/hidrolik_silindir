@@ -16,6 +16,7 @@ router = APIRouter(prefix="/excel-pricing", tags=["Excel Pricing"])
 class PriceCalculationRequest(BaseModel):
     """Fiyat hesaplama isteği"""
     selections: Dict[str, str]
+    stroke_mm: float = 0  # Strok uzunluğu (mm) - metre bazlı hesaplamalar için
 
 
 @router.post("/upload")
@@ -118,7 +119,7 @@ async def calculate_price(request: PriceCalculationRequest) -> Dict[str, Any]:
         }
     """
     service = get_excel_pricing_service()
-    result = service.calculate_price(request.selections)
+    result = service.calculate_price(request.selections, request.stroke_mm)
 
     if not result.get("success"):
         raise HTTPException(
