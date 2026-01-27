@@ -1,12 +1,13 @@
 """
 Excel Tabanlı Fiyatlandırma Servisi
 
-Excel dosyasından bileşen ve fiyat bilgilerini okur,
-dropdown seçenekleri ve fiyat hesaplama sağlar.
+Hidrolik silindir bileşenleri için Excel'den fiyat okuma ve hesaplama.
+Metre bazlı ve sabit fiyatlı bileşenleri destekler.
 """
 
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Optional
 from dataclasses import dataclass, field
@@ -18,6 +19,15 @@ logger = logging.getLogger(__name__)
 DATA_DIR = Path(__file__).parent.parent / "data"
 PRICING_DATA_FILE = DATA_DIR / "pricing_table.json"
 
+# Metre bazlı hesaplanan bileşenler ve formülleri
+# format: "column_key": {"add_mm": X} -> uzunluk = strok + X mm
+METER_BASED_COLUMNS = {
+    "boru_olcusu": {"add_mm": 120, "label": "Boru"},  # Boru boyu = Strok + 120mm
+    "h8_boru": {"add_mm": 120, "label": "Boru"},
+    "kromlu_mil_olcusu": {"add_mm": 100, "label": "Kromlu Mil"},  # Mil boyu = Strok + 100mm
+    "kromlu_mil": {"add_mm": 100, "label": "Kromlu Mil"},
+}
+
 
 @dataclass
 class PricingColumn:
@@ -25,6 +35,8 @@ class PricingColumn:
     name: str
     display_name: str
     options: list[dict] = field(default_factory=list)  # [{value, label, price}]
+    is_meter_based: bool = False  # Metre bazlı mı?
+    formula_add_mm: int = 0  # Strok'a eklenecek mm
 
 
 @dataclass
@@ -76,7 +88,9 @@ class ExcelPricingService:
                 {
                     "name": col.name,
                     "display_name": col.display_name,
-                    "options": col.options
+                    "options": col.options,
+                    "is_meter_based": col.is_meter_based,
+                    "formula_add_mm": col.formula_add_mm
                 }
                 for col in table.columns
             ],
@@ -89,227 +103,42 @@ class ExcelPricingService:
             PricingColumn(
                 name=col["name"],
                 display_name=col["display_name"],
-                options=col["options"]
+                options=col["options"],
+                is_meter_based=col.get("is_meter_based", False),
+                formula_add_mm=col.get("formula_add_mm", 0)
             )
             for col in data.get("columns", [])
         ]
         return PricingTable(columns=columns, metadata=data.get("metadata", {}))
 
-    def parse_excel(self, file_bytes: bytes, filename: str) -> dict:
-        """
-        Excel dosyasını parse et
+    def _parse_price(self, value) -> float:
+        """Fiyat değerini parse et (€, TL, virgül vb. destekler)"""
+        if pd.isna(value):
+            return 0.0
 
-        Beklenen format (Seçenek 1 - Dikey):
-        | Kategori      | Seçenek | Fiyat |
-        |---------------|---------|-------|
-        | Silindir Çapı | Ø50     | 100   |
-        | Silindir Çapı | Ø63     | 120   |
-        | Mil Çapı      | Ø25     | 50    |
+        val_str = str(value).strip()
+        if not val_str:
+            return 0.0
 
-        Veya (Seçenek 2 - Yatay, her sütun bir kategori):
-        | Silindir Çapı | Fiyat | Mil Çapı | Fiyat | ...
-        | Ø50          | 100   | Ø25      | 50    |
-        | Ø63          | 120   | Ø32      | 60    |
-        """
-        import io
+        # Para birimi sembollerini ve boşlukları temizle
+        val_str = val_str.replace('€', '').replace('₺', '').replace('TL', '').replace('EUR', '').strip()
+
+        # Avrupa formatı: 1.234,56 -> 1234.56
+        # Eğer hem nokta hem virgül varsa
+        if ',' in val_str and '.' in val_str:
+            # Noktayı binlik ayırıcı, virgülü ondalık kabul et
+            val_str = val_str.replace('.', '').replace(',', '.')
+        elif ',' in val_str:
+            # Sadece virgül var - ondalık ayırıcı
+            val_str = val_str.replace(',', '.')
 
         try:
-            # Excel dosyasını oku
-            df = pd.read_excel(io.BytesIO(file_bytes), engine='openpyxl')
-            logger.info(f"Excel loaded: {df.shape[0]} rows, {df.shape[1]} columns")
-            logger.info(f"Columns: {list(df.columns)}")
-
-            # Format tespiti
-            columns_lower = [str(c).lower() for c in df.columns]
-
-            # Format 1: Kategori | Seçenek | Fiyat
-            if any('kategori' in c or 'bileşen' in c or 'component' in c for c in columns_lower):
-                return self._parse_vertical_format(df)
-
-            # Format 2: Her sütun çifti bir kategori (Seçenek, Fiyat)
-            elif any('fiyat' in c or 'price' in c for c in columns_lower):
-                return self._parse_horizontal_format(df)
-
-            # Format 3: Basit format - ilk satır header, sonrakiler değerler
-            else:
-                return self._parse_simple_format(df)
-
-        except Exception as e:
-            logger.error(f"Excel parse error: {e}")
-            raise ValueError(f"Excel dosyası okunamadı: {str(e)}")
-
-    def _parse_vertical_format(self, df: pd.DataFrame) -> dict:
-        """Dikey format: Kategori | Seçenek | Fiyat"""
-        # Sütun isimlerini normalize et
-        col_mapping = {}
-        for col in df.columns:
-            col_lower = str(col).lower()
-            if 'kategori' in col_lower or 'bileşen' in col_lower or 'component' in col_lower:
-                col_mapping['category'] = col
-            elif 'seçenek' in col_lower or 'değer' in col_lower or 'option' in col_lower or 'value' in col_lower:
-                col_mapping['option'] = col
-            elif 'fiyat' in col_lower or 'price' in col_lower or 'ücret' in col_lower:
-                col_mapping['price'] = col
-
-        if len(col_mapping) < 3:
-            raise ValueError("Dikey format için Kategori, Seçenek ve Fiyat sütunları gerekli")
-
-        # Kategorilere göre grupla
-        categories = {}
-        for _, row in df.iterrows():
-            cat = str(row[col_mapping['category']]).strip()
-            opt = str(row[col_mapping['option']]).strip()
-            price = float(row[col_mapping['price']]) if pd.notna(row[col_mapping['price']]) else 0
-
-            if cat not in categories:
-                categories[cat] = []
-
-            categories[cat].append({
-                "value": opt,
-                "label": opt,
-                "price": price
-            })
-
-        # PricingTable oluştur
-        columns = [
-            PricingColumn(
-                name=self._slugify(cat),
-                display_name=cat,
-                options=opts
-            )
-            for cat, opts in categories.items()
-        ]
-
-        self._pricing_table = PricingTable(
-            columns=columns,
-            metadata={"format": "vertical", "row_count": len(df)}
-        )
-        self._save_data()
-
-        return {
-            "success": True,
-            "format": "vertical",
-            "categories": list(categories.keys()),
-            "total_options": sum(len(opts) for opts in categories.values())
-        }
-
-    def _parse_horizontal_format(self, df: pd.DataFrame) -> dict:
-        """Yatay format: Her sütun çifti bir kategori"""
-        columns = list(df.columns)
-        categories = {}
-
-        i = 0
-        while i < len(columns):
-            col_name = str(columns[i])
-
-            # "Fiyat" sütununu atla
-            if 'fiyat' in col_name.lower() or 'price' in col_name.lower():
-                i += 1
-                continue
-
-            # Sonraki sütun fiyat mı?
-            price_col = None
-            if i + 1 < len(columns):
-                next_col = str(columns[i + 1]).lower()
-                if 'fiyat' in next_col or 'price' in next_col:
-                    price_col = columns[i + 1]
-
-            # Değerleri topla
-            options = []
-            for _, row in df.iterrows():
-                value = row[columns[i]]
-                if pd.notna(value) and str(value).strip():
-                    price = float(row[price_col]) if price_col and pd.notna(row[price_col]) else 0
-                    options.append({
-                        "value": str(value).strip(),
-                        "label": str(value).strip(),
-                        "price": price
-                    })
-
-            if options:
-                categories[col_name] = options
-
-            i += 2 if price_col else 1
-
-        # PricingTable oluştur
-        columns_list = [
-            PricingColumn(
-                name=self._slugify(cat),
-                display_name=cat,
-                options=opts
-            )
-            for cat, opts in categories.items()
-        ]
-
-        self._pricing_table = PricingTable(
-            columns=columns_list,
-            metadata={"format": "horizontal", "row_count": len(df)}
-        )
-        self._save_data()
-
-        return {
-            "success": True,
-            "format": "horizontal",
-            "categories": list(categories.keys()),
-            "total_options": sum(len(opts) for opts in categories.values())
-        }
-
-    def _parse_simple_format(self, df: pd.DataFrame) -> dict:
-        """Basit format: Her sütun bir kategori, değerler satırlarda"""
-        categories = {}
-
-        for col in df.columns:
-            col_name = str(col)
-            values = df[col].dropna().unique()
-
-            options = []
-            for val in values:
-                val_str = str(val).strip()
-                if val_str:
-                    # Fiyat değeri var mı kontrol et (sayısal ise)
-                    try:
-                        price = float(val_str.replace(',', '.').replace('₺', '').replace('TL', '').strip())
-                        options.append({
-                            "value": val_str,
-                            "label": val_str,
-                            "price": price
-                        })
-                    except ValueError:
-                        options.append({
-                            "value": val_str,
-                            "label": val_str,
-                            "price": 0
-                        })
-
-            if options:
-                categories[col_name] = options
-
-        # PricingTable oluştur
-        columns = [
-            PricingColumn(
-                name=self._slugify(cat),
-                display_name=cat,
-                options=opts
-            )
-            for cat, opts in categories.items()
-        ]
-
-        self._pricing_table = PricingTable(
-            columns=columns,
-            metadata={"format": "simple", "row_count": len(df)}
-        )
-        self._save_data()
-
-        return {
-            "success": True,
-            "format": "simple",
-            "categories": list(categories.keys()),
-            "total_options": sum(len(opts) for opts in categories.values())
-        }
+            return float(val_str)
+        except ValueError:
+            return 0.0
 
     def _slugify(self, text: str) -> str:
         """Metni slug formatına çevir"""
-        import re
         # Türkçe karakterleri değiştir
         tr_map = {
             'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u',
@@ -323,6 +152,150 @@ class ExcelPricingService:
         text = re.sub(r'[^\w\s-]', '', text)
         text = re.sub(r'[\s_-]+', '_', text)
         return text
+
+    def _is_meter_based_column(self, col_name: str) -> tuple[bool, int]:
+        """Sütunun metre bazlı olup olmadığını ve formül değerini kontrol et"""
+        slug = self._slugify(col_name)
+
+        for key, config in METER_BASED_COLUMNS.items():
+            if key in slug:
+                return True, config["add_mm"]
+
+        # Özel kontroller
+        if 'boru' in slug and ('metre' in slug or 'olcu' in slug):
+            return True, 120
+        if 'mil' in slug and ('metre' in slug or 'olcu' in slug):
+            return True, 100
+        if 'kromlu' in slug:
+            return True, 100
+
+        return False, 0
+
+    def parse_excel(self, file_bytes: bytes, filename: str) -> dict:
+        """
+        Excel dosyasını parse et - Hidrolik silindir fiyat tablosu formatı
+
+        Beklenen format:
+        | BORU ÖLÇÜSÜ | H8 BORU METRE FİYATI | ARKA KAPAK | ARKA KAPAK FİYATI | ...
+        | Ø40/50      | 29,33 €              | Ø40/50     | 3,39 €            | ...
+        """
+        import io
+
+        try:
+            # Excel dosyasını oku
+            df = pd.read_excel(io.BytesIO(file_bytes), engine='openpyxl')
+            logger.info(f"Excel loaded: {df.shape[0]} rows, {df.shape[1]} columns")
+            logger.info(f"Columns: {list(df.columns)}")
+
+            # Hidrolik silindir tablosu formatını parse et
+            return self._parse_cylinder_format(df)
+
+        except Exception as e:
+            logger.error(f"Excel parse error: {e}")
+            raise ValueError(f"Excel dosyası okunamadı: {str(e)}")
+
+    def _parse_cylinder_format(self, df: pd.DataFrame) -> dict:
+        """
+        Hidrolik silindir fiyat tablosu formatını parse et
+
+        Her sütun çifti: [Değer Sütunu] [Fiyat Sütunu]
+        Fiyat sütunu "FİYAT" veya "FİYATI" içerir
+        """
+        columns = list(df.columns)
+        categories = {}
+        processed_columns = []
+
+        i = 0
+        while i < len(columns):
+            col_name = str(columns[i]).strip()
+
+            # Boş veya Unnamed sütunları atla
+            if not col_name or 'Unnamed' in col_name:
+                i += 1
+                continue
+
+            col_lower = col_name.lower()
+
+            # Bu sütun zaten bir fiyat sütunu mu?
+            if 'fiyat' in col_lower or 'price' in col_lower:
+                i += 1
+                continue
+
+            # Sonraki sütun fiyat sütunu mu?
+            price_col = None
+            price_col_index = None
+
+            # Sonraki birkaç sütuna bak (bazen araya boş sütun girebilir)
+            for j in range(i + 1, min(i + 3, len(columns))):
+                next_col = str(columns[j]).lower()
+                if 'fiyat' in next_col or 'price' in next_col:
+                    price_col = columns[j]
+                    price_col_index = j
+                    break
+
+            # Değerleri topla
+            options = []
+            for idx, row in df.iterrows():
+                value = row[columns[i]]
+                if pd.notna(value) and str(value).strip():
+                    value_str = str(value).strip()
+                    price = 0.0
+
+                    if price_col is not None:
+                        price = self._parse_price(row[price_col])
+
+                    options.append({
+                        "value": value_str,
+                        "label": value_str,
+                        "price": price
+                    })
+
+            if options:
+                # Metre bazlı mı kontrol et
+                is_meter, add_mm = self._is_meter_based_column(col_name)
+
+                categories[col_name] = {
+                    "options": options,
+                    "is_meter_based": is_meter,
+                    "formula_add_mm": add_mm
+                }
+                processed_columns.append(col_name)
+
+            # Sonraki sütun grubuna geç
+            if price_col_index:
+                i = price_col_index + 1
+            else:
+                i += 1
+
+        # PricingTable oluştur
+        columns_list = [
+            PricingColumn(
+                name=self._slugify(cat),
+                display_name=cat,
+                options=data["options"],
+                is_meter_based=data["is_meter_based"],
+                formula_add_mm=data["formula_add_mm"]
+            )
+            for cat, data in categories.items()
+        ]
+
+        self._pricing_table = PricingTable(
+            columns=columns_list,
+            metadata={
+                "format": "cylinder",
+                "row_count": len(df),
+                "column_count": len(columns_list)
+            }
+        )
+        self._save_data()
+
+        return {
+            "success": True,
+            "format": "cylinder",
+            "categories": processed_columns,
+            "total_options": sum(len(data["options"]) for data in categories.values()),
+            "meter_based_columns": [cat for cat, data in categories.items() if data["is_meter_based"]]
+        }
 
     def get_dropdown_options(self) -> dict:
         """Dropdown seçeneklerini getir"""
@@ -339,24 +312,27 @@ class ExcelPricingService:
                 {
                     "name": col.name,
                     "display_name": col.display_name,
-                    "options": col.options
+                    "options": col.options,
+                    "is_meter_based": col.is_meter_based,
+                    "formula_add_mm": col.formula_add_mm
                 }
                 for col in self._pricing_table.columns
             ],
             "metadata": self._pricing_table.metadata
         }
 
-    def calculate_price(self, selections: dict) -> dict:
+    def calculate_price(self, selections: dict, stroke_mm: float = 0) -> dict:
         """
         Seçimlere göre fiyat hesapla
 
         Args:
             selections: {"column_name": "selected_value", ...}
+            stroke_mm: Strok uzunluğu (mm) - metre bazlı hesaplamalar için
 
         Returns:
             {
                 "success": True,
-                "items": [{"name": "...", "value": "...", "price": 100}, ...],
+                "items": [{"name": "...", "value": "...", "unit_price": 10, "quantity": 1, "price": 100}, ...],
                 "total": 500
             }
         """
@@ -375,20 +351,44 @@ class ExcelPricingService:
                 # Seçilen değerin fiyatını bul
                 for opt in col.options:
                     if opt["value"] == selected_value:
-                        price = opt.get("price", 0)
-                        items.append({
-                            "name": col.display_name,
-                            "value": selected_value,
-                            "price": price
-                        })
-                        total += price
+                        unit_price = opt.get("price", 0)
+
+                        if col.is_meter_based and stroke_mm > 0:
+                            # Metre bazlı hesaplama
+                            length_mm = stroke_mm + col.formula_add_mm
+                            length_m = length_mm / 1000.0
+                            calculated_price = unit_price * length_m
+
+                            items.append({
+                                "name": col.display_name,
+                                "value": selected_value,
+                                "unit_price": unit_price,
+                                "unit": "€/m",
+                                "length_mm": length_mm,
+                                "length_m": round(length_m, 3),
+                                "formula": f"({stroke_mm} + {col.formula_add_mm}) mm × {unit_price} €/m",
+                                "price": round(calculated_price, 2)
+                            })
+                            total += calculated_price
+                        else:
+                            # Sabit fiyat
+                            items.append({
+                                "name": col.display_name,
+                                "value": selected_value,
+                                "unit_price": unit_price,
+                                "unit": "€/adet",
+                                "quantity": 1,
+                                "price": unit_price
+                            })
+                            total += unit_price
                         break
 
         return {
             "success": True,
             "items": items,
-            "total": total,
-            "currency": "TRY"
+            "total": round(total, 2),
+            "stroke_mm": stroke_mm,
+            "currency": "EUR"
         }
 
     def clear_data(self):
@@ -404,7 +404,9 @@ class ExcelPricingService:
             PricingColumn(
                 name=col.get("name", self._slugify(col.get("display_name", "unknown"))),
                 display_name=col.get("display_name", "Unknown"),
-                options=col.get("options", [])
+                options=col.get("options", []),
+                is_meter_based=col.get("is_meter_based", False),
+                formula_add_mm=col.get("formula_add_mm", 0)
             )
             for col in columns_data
         ]

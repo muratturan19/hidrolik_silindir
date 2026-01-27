@@ -97,6 +97,8 @@ export interface ExcelPricingColumn {
     label: string;
     price: number;
   }>;
+  is_meter_based?: boolean;  // Metre bazlı mı?
+  formula_add_mm?: number;   // Strok'a eklenecek mm
 }
 
 export interface ExcelPricingOptions {
@@ -105,14 +107,25 @@ export interface ExcelPricingOptions {
   metadata?: Record<string, unknown>;
 }
 
+export interface ExcelPriceItem {
+  name: string;
+  value: string;
+  unit_price: number;
+  unit: string;       // "€/m" veya "€/adet"
+  price: number;
+  // Metre bazlı hesaplamalar için
+  length_mm?: number;
+  length_m?: number;
+  formula?: string;
+  // Sabit fiyatlar için
+  quantity?: number;
+}
+
 export interface ExcelPriceResult {
   success: boolean;
-  items: Array<{
-    name: string;
-    value: string;
-    price: number;
-  }>;
+  items: ExcelPriceItem[];
   total: number;
+  stroke_mm?: number;
   currency: string;
 }
 
@@ -143,9 +156,10 @@ export async function getExcelPricingOptions(): Promise<ExcelPricingOptions> {
 
 // Fiyat hesapla
 export async function calculateExcelPrice(
-  selections: Record<string, string>
+  selections: Record<string, string>,
+  stroke_mm: number = 0
 ): Promise<ExcelPriceResult> {
-  const response = await api.post('/excel-pricing/calculate', { selections });
+  const response = await api.post('/excel-pricing/calculate', { selections, stroke_mm });
   return response.data;
 }
 
