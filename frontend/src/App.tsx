@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { CalculatorPage, ParametersPage, ExcelSettingsPage } from './pages';
 import type { PricingParameters } from './types';
 import { defaultPricingParameters } from './types';
@@ -117,15 +118,21 @@ function App() {
           <Route
             path="parameters"
             element={
-              <ParametersPage
-                parameters={parameters}
-                onSave={handleParametersSave}
-              />
+              <ProtectedRoute>
+                <ParametersPage
+                  parameters={parameters}
+                  onSave={handleParametersSave}
+                />
+              </ProtectedRoute>
             }
           />
           <Route
             path="excel-settings"
-            element={<ExcelSettingsPage />}
+            element={
+              <ProtectedRoute>
+                <ExcelSettingsPage />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="history"
