@@ -85,4 +85,85 @@ export async function getMountingTypes() {
   return response.data;
 }
 
+// ===============================
+// Excel Tabanlı Fiyatlandırma API
+// ===============================
+
+export interface ExcelPricingColumn {
+  name: string;
+  display_name: string;
+  options: Array<{
+    value: string;
+    label: string;
+    price: number;
+  }>;
+}
+
+export interface ExcelPricingOptions {
+  success: boolean;
+  columns: ExcelPricingColumn[];
+  metadata?: Record<string, unknown>;
+}
+
+export interface ExcelPriceResult {
+  success: boolean;
+  items: Array<{
+    name: string;
+    value: string;
+    price: number;
+  }>;
+  total: number;
+  currency: string;
+}
+
+// Excel dosyası yükle
+export async function uploadExcelPricing(file: File): Promise<{
+  success: boolean;
+  message: string;
+  format: string;
+  categories: string[];
+  total_options: number;
+}> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await api.post('/excel-pricing/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+}
+
+// Dropdown seçeneklerini getir
+export async function getExcelPricingOptions(): Promise<ExcelPricingOptions> {
+  const response = await api.get('/excel-pricing/options');
+  return response.data;
+}
+
+// Fiyat hesapla
+export async function calculateExcelPrice(
+  selections: Record<string, string>
+): Promise<ExcelPriceResult> {
+  const response = await api.post('/excel-pricing/calculate', { selections });
+  return response.data;
+}
+
+// Excel durumunu kontrol et
+export async function getExcelPricingStatus(): Promise<{
+  loaded: boolean;
+  column_count?: number;
+  columns?: string[];
+  message?: string;
+}> {
+  const response = await api.get('/excel-pricing/status');
+  return response.data;
+}
+
+// Excel verisini temizle
+export async function clearExcelPricing(): Promise<{ success: boolean; message: string }> {
+  const response = await api.delete('/excel-pricing/clear');
+  return response.data;
+}
+
 export default api;

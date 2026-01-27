@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Upload, Calculator } from 'lucide-react';
+import { Upload, Calculator, Table2 } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import { ImageUploader } from '../components/ImageUploader';
 import { DimensionForm } from '../components/DimensionForm';
+import { TableSelector } from '../components/TableSelector';
 import { PricingResultCard } from '../components/PricingResult';
 import { uploadAndAnalyze, calculatePricing } from '../services/api';
 import type {
@@ -15,7 +16,7 @@ import type {
   PricingParameters,
 } from '../types';
 
-type TabType = 'upload' | 'manual';
+type TabType = 'upload' | 'manual' | 'table';
 
 interface CalculatorPageProps {
   currency: string;
@@ -96,8 +97,8 @@ export function CalculatorPage({ currency, exchangeRate, parameters }: Calculato
           <button
             onClick={() => setActiveTab('upload')}
             className={`
-              flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg
-              font-medium transition-all duration-200
+              flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-lg
+              font-medium transition-all duration-200 text-sm
               ${activeTab === 'upload'
                 ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/25'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -105,13 +106,13 @@ export function CalculatorPage({ currency, exchangeRate, parameters }: Calculato
             `}
           >
             <Upload className="h-4 w-4" />
-            Teknik Resim Yükle
+            <span className="hidden sm:inline">Teknik Resim</span>
           </button>
           <button
             onClick={() => setActiveTab('manual')}
             className={`
-              flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg
-              font-medium transition-all duration-200
+              flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-lg
+              font-medium transition-all duration-200 text-sm
               ${activeTab === 'manual'
                 ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/25'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -119,7 +120,21 @@ export function CalculatorPage({ currency, exchangeRate, parameters }: Calculato
             `}
           >
             <Calculator className="h-4 w-4" />
-            Manuel Giriş
+            <span className="hidden sm:inline">Manuel Giriş</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('table')}
+            className={`
+              flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-lg
+              font-medium transition-all duration-200 text-sm
+              ${activeTab === 'table'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/25'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }
+            `}
+          >
+            <Table2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Tablodan Seçim</span>
           </button>
         </div>
 
@@ -127,12 +142,18 @@ export function CalculatorPage({ currency, exchangeRate, parameters }: Calculato
         <Card>
           <CardHeader>
             <h2 className="text-lg font-semibold text-gray-900">
-              {activeTab === 'upload' ? 'Teknik Resim Analizi' : 'Ölçü Girişi'}
+              {activeTab === 'upload'
+                ? 'Teknik Resim Analizi'
+                : activeTab === 'manual'
+                ? 'Ölçü Girişi'
+                : 'Tablodan Fiyatlandırma'}
             </h2>
             <p className="text-sm text-gray-500 mt-1">
               {activeTab === 'upload'
                 ? 'Teknik resmi yükleyin, GPT-5.2 ölçüleri otomatik çıkarsın'
-                : 'Silindir ölçülerini manuel olarak girin'
+                : activeTab === 'manual'
+                ? 'Silindir ölçülerini manuel olarak girin'
+                : 'Excel tablosundan bileşen seçerek fiyat hesaplayın'
               }
             </p>
           </CardHeader>
@@ -143,7 +164,7 @@ export function CalculatorPage({ currency, exchangeRate, parameters }: Calculato
                 onAnalysisComplete={handleAnalysisComplete}
                 isLoading={isLoading}
               />
-            ) : (
+            ) : activeTab === 'manual' ? (
               <DimensionForm
                 initialDimensions={analysisResult?.dimensions}
                 initialMaterial={analysisResult?.detected_material}
@@ -152,6 +173,11 @@ export function CalculatorPage({ currency, exchangeRate, parameters }: Calculato
                 parameters={parameters}
                 onSubmit={handleCalculatePricing}
                 isLoading={isLoading}
+              />
+            ) : (
+              <TableSelector
+                currency={currency}
+                exchangeRate={exchangeRate}
               />
             )}
           </CardBody>
