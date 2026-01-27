@@ -18,6 +18,17 @@ logger = logging.getLogger(__name__)
 # Veri dosyası yolu
 DATA_DIR = Path(__file__).parent.parent / "data"
 PRICING_DATA_FILE = DATA_DIR / "pricing_table.json"
+SETTINGS_FILE = DATA_DIR / "pricing_settings.json"
+
+# Varsayılan formül ayarları
+DEFAULT_SETTINGS = {
+    "boru_offset_mm": 120,
+    "mil_offset_mm": 150,
+    "formulas": {
+        "boru": "Boru Fiyatı = (Strok + {offset}mm) × Metre Fiyatı / 1000",
+        "mil": "Mil Fiyatı = (Strok + {offset}mm) × Metre Fiyatı / 1000"
+    }
+}
 
 # Metre bazlı hesaplanan bileşenler ve formülleri
 METER_BASED_KEYWORDS = ['boru', 'mil', 'kromlu']
@@ -46,7 +57,57 @@ class ExcelPricingService:
     def __init__(self):
         self._ensure_data_dir()
         self._pricing_table: Optional[PricingTable] = None
+        self._settings: dict = DEFAULT_SETTINGS.copy()
+        self._load_settings()
         self._load_saved_data()
+
+    def _load_settings(self):
+        """Ayarları dosyadan yükle"""
+        if SETTINGS_FILE.exists():
+            try:
+                with open(SETTINGS_FILE, 'r', encoding='utf-8') as f:
+                    saved = json.load(f)
+                    self._settings.update(saved)
+                    logger.info(f"Settings loaded: boru={self._settings['boru_offset_mm']}mm, mil={self._settings['mil_offset_mm']}mm")
+            except Exception as e:
+                logger.error(f"Failed to load settings: {e}")
+
+    def _save_settings(self):
+        """Ayarları dosyaya kaydet"""
+        try:
+            with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
+                json.dump(self._settings, f, ensure_ascii=False, indent=2)
+            logger.info("Settings saved")
+        except Exception as e:
+            logger.error(f"Failed to save settings: {e}")
+
+    def get_settings(self) -> dict:
+        """Mevcut ayarları döndür"""
+        return {
+            "boru_offset_mm": self._settings.get("boru_offset_mm", 120),
+            "mil_offset_mm": self._settings.get("mil_offset_mm", 150),
+            "formulas": self._settings.get("formulas", DEFAULT_SETTINGS["formulas"])
+        }
+
+    def update_settings(self, boru_offset_mm: int = None, mil_offset_mm: int = None) -> dict:
+        """Formül ayarlarını güncelle"""
+        if boru_offset_mm is not None:
+            self._settings["boru_offset_mm"] = boru_offset_mm
+        if mil_offset_mm is not None:
+            self._settings["mil_offset_mm"] = mil_offset_mm
+        self._save_settings()
+
+        # Pricing table'daki offset değerlerini de güncelle
+        if self._pricing_table:
+            for col in self._pricing_table.columns:
+                col_lower = self._normalize_turkish(col.display_name)
+                if 'boru' in col_lower:
+                    col.formula_add_mm = self._settings["boru_offset_mm"]
+                elif 'mil' in col_lower or 'kromlu' in col_lower:
+                    col.formula_add_mm = self._settings["mil_offset_mm"]
+            self._save_data()
+
+        return self.get_settings()
 
     def _ensure_data_dir(self):
         DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -149,9 +210,9 @@ class ExcelPricingService:
         """Metre bazlı sütun mu? Formül değerini döndür."""
         col_normalized = self._normalize_turkish(col_name)
         if 'boru' in col_normalized:
-            return True, 120  # Boru boyu = Strok + 120mm
+            return True, self._settings.get("boru_offset_mm", 120)
         if 'mil' in col_normalized or 'kromlu' in col_normalized:
-            return True, 150  # Mil boyu = Strok + 150mm
+            return True, self._settings.get("mil_offset_mm", 150)
         return False, 0
 
     def _find_header_rows(self, df: pd.DataFrame) -> list[int]:
@@ -337,38 +398,41 @@ class ExcelPricingService:
 
         for col in self._pricing_table.columns:
             selected_value = selections.get(col.name)
-            if selected_value:
-                for opt in col.options:
-                    if opt["value"] == selected_value:
-                        unit_price = opt.get("price", 0)
+            # "YOK" seçiliyse bu bileşeni atla
+            if not selected_value or selected_value.upper() == "YOK":
+                continue
 
-                        if col.is_meter_based and stroke_mm > 0:
-                            length_mm = stroke_mm + col.formula_add_mm
-                            length_m = length_mm / 1000.0
-                            calculated_price = unit_price * length_m
+            for opt in col.options:
+                if opt["value"] == selected_value:
+                    unit_price = opt.get("price", 0)
 
-                            items.append({
-                                "name": col.display_name,
-                                "value": selected_value,
-                                "unit_price": unit_price,
-                                "unit": "€/m",
-                                "length_mm": length_mm,
-                                "length_m": round(length_m, 3),
-                                "formula": f"({stroke_mm} + {col.formula_add_mm}) mm × {unit_price} €/m",
-                                "price": round(calculated_price, 2)
-                            })
-                            total += calculated_price
-                        else:
-                            items.append({
-                                "name": col.display_name,
-                                "value": selected_value,
-                                "unit_price": unit_price,
-                                "unit": "€/adet",
-                                "quantity": 1,
-                                "price": unit_price
-                            })
-                            total += unit_price
-                        break
+                    if col.is_meter_based and stroke_mm > 0:
+                        length_mm = stroke_mm + col.formula_add_mm
+                        length_m = length_mm / 1000.0
+                        calculated_price = unit_price * length_m
+
+                        items.append({
+                            "name": col.display_name,
+                            "value": selected_value,
+                            "unit_price": unit_price,
+                            "unit": "€/m",
+                            "length_mm": length_mm,
+                            "length_m": round(length_m, 3),
+                            "formula": f"({stroke_mm} + {col.formula_add_mm}) mm × {unit_price} €/m",
+                            "price": round(calculated_price, 2)
+                        })
+                        total += calculated_price
+                    else:
+                        items.append({
+                            "name": col.display_name,
+                            "value": selected_value,
+                            "unit_price": unit_price,
+                            "unit": "€/adet",
+                            "quantity": 1,
+                            "price": unit_price
+                        })
+                        total += unit_price
+                    break
 
         return {
             "success": True,
