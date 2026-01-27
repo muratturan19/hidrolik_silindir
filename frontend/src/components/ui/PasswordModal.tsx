@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Lock, X, Eye, EyeOff } from 'lucide-react';
+import { Lock, X, Eye, EyeOff, User } from 'lucide-react';
+
+const API_BASE = 'http://localhost:8000';
 
 interface PasswordModalProps {
   isOpen: boolean;
@@ -7,32 +9,49 @@ interface PasswordModalProps {
   onSuccess: () => void;
 }
 
-// Varsayılan şifre - gerçek uygulamada backend'den kontrol edilmeli
-const ADMIN_PASSWORD = 'hidrolik2024';
-
 export function PasswordModal({ isOpen, onClose, onSuccess }: PasswordModalProps) {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
 
-    if (password === ADMIN_PASSWORD) {
-      // Oturum boyunca yetkilendirmeyi sakla
-      sessionStorage.setItem('adminAuth', 'true');
-      setPassword('');
-      setError('');
-      onSuccess();
-    } else {
-      setError('Yanlış şifre!');
-      setPassword('');
+    try {
+      const res = await fetch(`${API_BASE}/users/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // Oturum bilgilerini sakla
+        sessionStorage.setItem('adminAuth', 'true');
+        sessionStorage.setItem('adminUser', data.user.username);
+        sessionStorage.setItem('isAdmin', data.user.is_admin ? 'true' : 'false');
+        setUsername('');
+        setPassword('');
+        setError('');
+        onSuccess();
+      } else {
+        setError(data.message || 'Giriş başarısız');
+      }
+    } catch (err) {
+      setError('Sunucuya bağlanılamadı');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleClose = () => {
+    setUsername('');
     setPassword('');
     setError('');
     onClose();
@@ -69,45 +88,79 @@ export function PasswordModal({ isOpen, onClose, onSuccess }: PasswordModalProps
         {/* Content */}
         <form onSubmit={handleSubmit} className="p-6">
           <p className="text-gray-600 text-sm mb-4">
-            Bu alana erişmek için yönetici şifresini girin.
+            Bu alana erişmek için kullanıcı bilgilerinizi girin.
           </p>
 
-          <div className="relative">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setError('');
-              }}
-              placeholder="Şifre"
-              className={`
-                w-full px-4 py-3 pr-12 rounded-xl border-2 transition-all duration-200
-                focus:outline-none focus:ring-2 focus:ring-indigo-500/20
-                ${error
-                  ? 'border-red-300 bg-red-50'
-                  : 'border-gray-200 focus:border-indigo-500'
-                }
-              `}
-              autoFocus
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
-            >
-              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            </button>
+          {/* Kullanıcı Adı */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Kullanıcı Adı
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setError('');
+                }}
+                placeholder="Kullanıcı adı"
+                className={`
+                  w-full px-4 py-3 pl-11 rounded-xl border-2 transition-all duration-200
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500/20
+                  ${error
+                    ? 'border-red-300 bg-red-50'
+                    : 'border-gray-200 focus:border-indigo-500'
+                  }
+                `}
+                autoFocus
+              />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            </div>
+          </div>
+
+          {/* Şifre */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Şifre
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError('');
+                }}
+                placeholder="Şifre"
+                className={`
+                  w-full px-4 py-3 pl-11 pr-12 rounded-xl border-2 transition-all duration-200
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500/20
+                  ${error
+                    ? 'border-red-300 bg-red-50'
+                    : 'border-gray-200 focus:border-indigo-500'
+                  }
+                `}
+              />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
           </div>
 
           {error && (
-            <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+            <p className="mb-4 text-sm text-red-600 flex items-center gap-1">
               <span className="inline-block w-1 h-1 bg-red-600 rounded-full" />
               {error}
             </p>
           )}
 
-          <div className="flex gap-3 mt-6">
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={handleClose}
@@ -117,11 +170,16 @@ export function PasswordModal({ isOpen, onClose, onSuccess }: PasswordModalProps
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium hover:shadow-lg hover:shadow-indigo-500/25 transition-all"
+              disabled={loading}
+              className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium hover:shadow-lg hover:shadow-indigo-500/25 transition-all disabled:opacity-50"
             >
-              Giriş
+              {loading ? 'Giriş yapılıyor...' : 'Giriş'}
             </button>
           </div>
+
+          <p className="mt-4 text-xs text-gray-400 text-center">
+            Varsayılan: admin / Admin123!
+          </p>
         </form>
       </div>
     </div>
@@ -136,4 +194,17 @@ export function isAdminAuthenticated(): boolean {
 // Oturumu sonlandırma
 export function clearAdminAuth(): void {
   sessionStorage.removeItem('adminAuth');
+  sessionStorage.removeItem('adminUser');
+  sessionStorage.removeItem('isAdmin');
+}
+
+// Mevcut kullanıcı bilgisi
+export function getCurrentUser(): { username: string; isAdmin: boolean } | null {
+  const auth = sessionStorage.getItem('adminAuth');
+  if (auth !== 'true') return null;
+
+  return {
+    username: sessionStorage.getItem('adminUser') || '',
+    isAdmin: sessionStorage.getItem('isAdmin') === 'true'
+  };
 }

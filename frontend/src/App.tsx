@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { CalculatorPage, ParametersPage, ExcelSettingsPage } from './pages';
+import { CalculatorPage, ParametersPage, ExcelSettingsPage, UserManagementPage } from './pages';
 import type { PricingParameters } from './types';
 import { defaultPricingParameters } from './types';
 
@@ -131,6 +131,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ExcelSettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="users"
+            element={
+              <ProtectedRoute>
+                <UserManagementPage />
               </ProtectedRoute>
             }
           />

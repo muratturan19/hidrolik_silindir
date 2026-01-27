@@ -2,7 +2,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .config import get_settings
-from .routers import pricing_router, analysis_router, excel_pricing_router
+from .routers import pricing_router, analysis_router, excel_pricing_router, users_router
 
 # Logging configuration
 logging.basicConfig(
@@ -51,6 +51,7 @@ app.add_middleware(
 app.include_router(pricing_router)
 app.include_router(analysis_router)
 app.include_router(excel_pricing_router)
+app.include_router(users_router)
 
 
 @app.get("/")
