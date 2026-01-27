@@ -135,10 +135,15 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
                   value={selectedValue || ''}
                   onChange={(e) => handleSelectionChange(column.name, e.target.value)}
                   className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white text-sm ${
+                    selectedValue === 'YOK' ? 'border-gray-300 bg-gray-50 text-gray-500' :
                     selectedValue ? 'border-emerald-300 bg-emerald-50' : 'border-gray-200'
                   }`}
                 >
                   <option value="">Seçiniz...</option>
+                  {/* Metre bazlı olmayan bileşenler için YOK seçeneği */}
+                  {!column.is_meter_based && (
+                    <option value="YOK" className="text-gray-500">YOK (Bu bileşen kullanılmayacak)</option>
+                  )}
                   {column.options.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
