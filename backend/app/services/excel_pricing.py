@@ -128,110 +128,165 @@ class ExcelPricingService:
         text = re.sub(r'[\s_-]+', '_', text)
         return text
 
+    def _normalize_turkish(self, text: str) -> str:
+        """Türkçe karakterleri normalize et"""
+        replacements = {
+            'İ': 'I', 'ı': 'i', 'Ş': 'S', 'ş': 's',
+            'Ğ': 'G', 'ğ': 'g', 'Ü': 'U', 'ü': 'u',
+            'Ö': 'O', 'ö': 'o', 'Ç': 'C', 'ç': 'c',
+            'i̇': 'i'  # combining dot issue
+        }
+        for tr, en in replacements.items():
+            text = text.replace(tr, en)
+        return text.lower()
+
     def _is_price_column(self, col_name: str) -> bool:
         """Sütun bir fiyat sütunu mu?"""
-        col_lower = col_name.lower()
-        return 'fiyat' in col_lower or 'price' in col_lower or 'ücret' in col_lower
+        col_normalized = self._normalize_turkish(col_name)
+        return 'fiyat' in col_normalized or 'price' in col_normalized or 'ucret' in col_normalized
 
     def _is_meter_based(self, col_name: str) -> tuple[bool, int]:
         """Metre bazlı sütun mu? Formül değerini döndür."""
-        col_lower = self._slugify(col_name)
-        if 'boru' in col_lower:
+        col_normalized = self._normalize_turkish(col_name)
+        if 'boru' in col_normalized:
             return True, 120  # Boru boyu = Strok + 120mm
-        if 'mil' in col_lower or 'kromlu' in col_lower:
-            return True, 100  # Mil boyu = Strok + 100mm
+        if 'mil' in col_normalized or 'kromlu' in col_normalized:
+            return True, 150  # Mil boyu = Strok + 150mm
         return False, 0
 
-    def _find_header_row(self, df: pd.DataFrame) -> int:
-        """Başlık satırını bul - FİYAT, ÖLÇÜ, BORU gibi anahtar kelimeleri ara"""
-        keywords = ['fiyat', 'ölçü', 'boru', 'mil', 'kapak', 'piston', 'keçe', 'burç']
+    def _find_header_rows(self, df: pd.DataFrame) -> list[int]:
+        """Tüm başlık satırlarını bul - Excel'de birden fazla bölüm olabilir"""
+        keywords = ['fiyat', 'olcu', 'boru', 'mil', 'kapak', 'piston', 'mafsal', 'bogaz', 'flans', 'terazi']
+        header_rows = []
 
         for idx, row in df.iterrows():
-            row_text = ' '.join(str(v).lower() for v in row.values if pd.notna(v))
+            row_text = ' '.join(self._normalize_turkish(str(v)) for v in row.values if pd.notna(v))
             matches = sum(1 for kw in keywords if kw in row_text)
             if matches >= 2:  # En az 2 anahtar kelime varsa bu başlık satırı
-                logger.info(f"Header row found at index {idx}: {list(row.values)}")
-                return idx
-        return 0  # Bulunamazsa 0 döndür
+                header_rows.append(idx)
+                logger.info(f"Header row at {idx}: {[str(v)[:20] for v in row.values if pd.notna(v)]}")
+
+        return header_rows if header_rows else [0]
 
     def parse_excel(self, file_bytes: bytes, filename: str) -> dict:
-        """Excel dosyasını parse et"""
+        """Excel dosyasını parse et - çoklu bölüm destekli"""
         import io
 
         try:
-            # Önce header olmadan oku, başlık satırını bul
-            df_raw = pd.read_excel(io.BytesIO(file_bytes), engine='openpyxl', header=None)
-            logger.info(f"Raw Excel: {df_raw.shape[0]} rows, {df_raw.shape[1]} columns")
-            logger.info(f"First 3 rows:\n{df_raw.head(3).to_string()}")
+            # Header olmadan oku
+            df = pd.read_excel(io.BytesIO(file_bytes), engine='openpyxl', header=None)
+            logger.info(f"Excel: {df.shape[0]} rows, {df.shape[1]} columns")
 
-            # Başlık satırını bul
-            header_row = self._find_header_row(df_raw)
-            logger.info(f"Using header row: {header_row}")
+            # Başlık satırlarını bul
+            header_rows = self._find_header_rows(df)
+            logger.info(f"Found header rows: {header_rows}")
 
-            # Şimdi doğru başlık satırıyla tekrar oku
-            df = pd.read_excel(io.BytesIO(file_bytes), engine='openpyxl', header=header_row)
+            # Her bölümü ayrı parse et
+            all_categories = {}
 
-            logger.info(f"Excel loaded: {df.shape[0]} rows, {df.shape[1]} columns")
-            logger.info(f"All columns: {list(df.columns)}")
+            for i, header_row in enumerate(header_rows):
+                # Bölümün bitiş satırını bul
+                if i + 1 < len(header_rows):
+                    end_row = header_rows[i + 1]
+                else:
+                    end_row = len(df)
 
-            # Sütun isimlerini temizle
-            df.columns = [str(col).strip() if pd.notna(col) else f'Unnamed_{i}'
-                         for i, col in enumerate(df.columns)]
+                logger.info(f"Parsing section {i+1}: rows {header_row} to {end_row}")
 
-            return self._parse_paired_columns(df)
+                # Başlık satırını al
+                headers = df.iloc[header_row].values
+
+                # Veri satırlarını al
+                data_rows = df.iloc[header_row + 1:end_row]
+
+                # Bu bölümdeki kategorileri parse et
+                section_categories = self._parse_section(headers, data_rows)
+                all_categories.update(section_categories)
+
+            # PricingTable oluştur
+            columns_list = [
+                PricingColumn(
+                    name=self._slugify(cat),
+                    display_name=cat,
+                    options=data["options"],
+                    is_meter_based=data["is_meter_based"],
+                    formula_add_mm=data["formula_add_mm"]
+                )
+                for cat, data in all_categories.items()
+            ]
+
+            self._pricing_table = PricingTable(
+                columns=columns_list,
+                metadata={
+                    "format": "multi_section",
+                    "sections": len(header_rows),
+                    "row_count": len(df),
+                    "column_count": len(columns_list)
+                }
+            )
+            self._save_data()
+
+            return {
+                "success": True,
+                "format": "multi_section",
+                "sections": len(header_rows),
+                "categories": list(all_categories.keys()),
+                "total_options": sum(len(data["options"]) for data in all_categories.values()),
+                "meter_based_columns": [cat for cat, data in all_categories.items() if data["is_meter_based"]]
+            }
 
         except Exception as e:
             logger.error(f"Excel parse error: {e}", exc_info=True)
             raise ValueError(f"Excel dosyası okunamadı: {str(e)}")
 
-    def _parse_paired_columns(self, df: pd.DataFrame) -> dict:
-        """
-        Eşleştirilmiş sütunları parse et.
-        Format: [Değer Sütunu] [Fiyat Sütunu] ... [Değer Sütunu] [Fiyat Sütunu]
-        """
-        columns = list(df.columns)
+    def _parse_section(self, headers, data_rows: pd.DataFrame) -> dict:
+        """Bir bölümü parse et - sütun çiftlerini bul"""
         categories = {}
-        processed = set()
 
-        logger.info(f"Parsing {len(columns)} columns...")
+        # Sütun çiftlerini bul: [Değer] [Fiyat] [Boş] [Değer] [Fiyat] [Boş] ...
+        i = 0
+        while i < len(headers):
+            header = headers[i]
 
-        # Önce tüm fiyat sütunlarını bul
-        price_columns = {}
-        for i, col in enumerate(columns):
-            if self._is_price_column(str(col)):
-                price_columns[i] = col
-                logger.info(f"Found price column at {i}: {col}")
-
-        # Her fiyat sütunu için önceki değer sütununu bul
-        for price_idx, price_col in price_columns.items():
-            # Önceki sütunu bul (boş/unnamed olmayanı)
-            value_col = None
-            value_idx = None
-
-            for j in range(price_idx - 1, -1, -1):
-                col_name = str(columns[j])
-                if j not in processed and not col_name.startswith('Unnamed') and col_name.strip():
-                    if not self._is_price_column(col_name):
-                        value_col = columns[j]
-                        value_idx = j
-                        break
-
-            if value_col is None:
-                logger.warning(f"No value column found for price column: {price_col}")
+            # Boş sütunu atla
+            if pd.isna(header) or str(header).strip() == '':
+                i += 1
                 continue
 
-            logger.info(f"Pairing: {value_col} <-> {price_col}")
-            processed.add(value_idx)
-            processed.add(price_idx)
+            header_str = str(header).strip().replace('\n', ' ')
+
+            # Fiyat sütunu mu?
+            if self._is_price_column(header_str):
+                i += 1
+                continue
+
+            # Değer sütunu - sonraki fiyat sütununu bul
+            value_col = i
+            price_col = None
+
+            if i + 1 < len(headers):
+                next_header = headers[i + 1]
+                if pd.notna(next_header) and self._is_price_column(str(next_header)):
+                    price_col = i + 1
+
+            logger.info(f"Category: {header_str}, value_col={value_col}, price_col={price_col}")
 
             # Değerleri topla
             options = []
-            for _, row in df.iterrows():
-                value = row[value_col]
-                price = row[price_col] if price_col in row else 0
+            seen_values = set()
+
+            for _, row in data_rows.iterrows():
+                value = row.iloc[value_col] if value_col < len(row) else None
+                price = row.iloc[price_col] if price_col and price_col < len(row) else 0
 
                 if pd.notna(value) and str(value).strip():
                     value_str = str(value).strip()
+
+                    # Aynı değeri tekrar ekleme
+                    if value_str in seen_values:
+                        continue
+                    seen_values.add(value_str)
+
                     price_float = self._parse_price(price)
 
                     options.append({
@@ -241,70 +296,18 @@ class ExcelPricingService:
                     })
 
             if options:
-                is_meter, add_mm = self._is_meter_based(str(value_col))
-                display_name = str(value_col).strip()
-
-                categories[display_name] = {
+                is_meter, add_mm = self._is_meter_based(header_str)
+                categories[header_str] = {
                     "options": options,
                     "is_meter_based": is_meter,
                     "formula_add_mm": add_mm
                 }
-                logger.info(f"Added category: {display_name} with {len(options)} options")
+                logger.info(f"Added: {header_str} with {len(options)} options, meter_based={is_meter}")
 
-        # Fiyat sütunu olmayan değer sütunlarını da ekle (fiyatsız)
-        for i, col in enumerate(columns):
-            col_name = str(col)
-            if i not in processed and not col_name.startswith('Unnamed') and col_name.strip():
-                if not self._is_price_column(col_name):
-                    options = []
-                    for _, row in df.iterrows():
-                        value = row[col]
-                        if pd.notna(value) and str(value).strip():
-                            value_str = str(value).strip()
-                            options.append({
-                                "value": value_str,
-                                "label": value_str,
-                                "price": 0
-                            })
+            # Sonraki sütun çiftine geç
+            i += 2 if price_col else 1
 
-                    if options:
-                        is_meter, add_mm = self._is_meter_based(col_name)
-                        categories[col_name] = {
-                            "options": options,
-                            "is_meter_based": is_meter,
-                            "formula_add_mm": add_mm
-                        }
-                        logger.info(f"Added category (no price): {col_name} with {len(options)} options")
-
-        # PricingTable oluştur
-        columns_list = [
-            PricingColumn(
-                name=self._slugify(cat),
-                display_name=cat,
-                options=data["options"],
-                is_meter_based=data["is_meter_based"],
-                formula_add_mm=data["formula_add_mm"]
-            )
-            for cat, data in categories.items()
-        ]
-
-        self._pricing_table = PricingTable(
-            columns=columns_list,
-            metadata={
-                "format": "paired",
-                "row_count": len(df),
-                "column_count": len(columns_list)
-            }
-        )
-        self._save_data()
-
-        return {
-            "success": True,
-            "format": "paired",
-            "categories": list(categories.keys()),
-            "total_options": sum(len(data["options"]) for data in categories.values()),
-            "meter_based_columns": [cat for cat, data in categories.items() if data["is_meter_based"]]
-        }
+        return categories
 
     def get_dropdown_options(self) -> dict:
         if not self._pricing_table:
