@@ -25,7 +25,7 @@ interface CalculatorPageProps {
 }
 
 export function CalculatorPage({ currency, exchangeRate, parameters }: CalculatorPageProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('manual');
+  const [activeTab, setActiveTab] = useState<TabType>('table');
   const [isLoading, setIsLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<ImageAnalysisResult | null>(null);
   const [pricingResult, setPricingResult] = useState<PricingResult | null>(null);
