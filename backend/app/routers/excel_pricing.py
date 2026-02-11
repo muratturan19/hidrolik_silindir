@@ -20,6 +20,15 @@ class PriceCalculationRequest(BaseModel):
     manual_prices: Dict[str, float] = {}  # Manuel girilen fiyatlar (key: "column_name:value", value: price)
 
 
+class AddOptionRequest(BaseModel):
+    """Yeni option ekleme isteği"""
+    column_name: str
+    value: str
+    price: float
+    discount: float = 0
+    offset: int = 0
+
+
 @router.post("/upload")
 async def upload_excel(file: UploadFile = File(...)) -> Dict[str, Any]:
     """
@@ -213,3 +222,29 @@ async def update_settings(request: SettingsUpdateRequest) -> Dict[str, Any]:
         "message": "Ayarlar güncellendi",
         **updated
     }
+
+
+@router.post("/add-option")
+async def add_option(request: AddOptionRequest) -> Dict[str, Any]:
+    """Mevcut kategoriye yeni option ekle"""
+    service = get_excel_pricing_service()
+    
+    try:
+        result = service.add_option(
+            column_name=request.column_name,
+            value=request.value,
+            price=request.price,
+            discount=request.discount,
+            offset=request.offset
+        )
+        return {
+            "success": True,
+            "message": f"{request.value} başarıyla eklendi",
+            **result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Add option error: {e}")
+        raise HTTPException(status_code=500, detail=f"Option eklenirken hata oluştu: {str(e)}")
+

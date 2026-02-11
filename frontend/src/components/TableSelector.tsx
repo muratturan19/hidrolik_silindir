@@ -4,6 +4,7 @@ import {
   getExcelPricingOptions,
   getExcelPricingStatus,
   calculateExcelPrice,
+  addPricingOption,
   type ExcelPricingColumn,
   type ExcelPriceResult,
 } from '../services/api';
@@ -84,7 +85,7 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
     setPriceResult(null);
   };
 
-  const handleManualPriceSubmit = (price: number) => {
+  const handleManualPriceSubmit = (price: number, discount: number, saveToDb: boolean) => {
     if (!pendingSelection) return;
 
     // Manuel fiyatı kaydet
@@ -100,8 +101,42 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
       [pendingSelection.columnName]: pendingSelection.value,
     }));
 
+    // Eğer DB'ye kaydedilecekse backend'e gönder
+    if (saveToDb) {
+      // TODO: Backend'e kaydetme işlemi
+      const column = columns.find((col) => col.name === pendingSelection.columnName);
+      if (column) {
+        savePriceToDatabase(column.name, pendingSelection.value, price, discount);
+      }
+    }
+
     setPriceResult(null);
     setPendingSelection(null);
+  };
+
+  const savePriceToDatabase = async (columnName: string, value: string, price: number, discount: number) => {
+    try {
+      const column = columns.find((col) => col.name === columnName);
+      if (!column) return;
+
+      // Metre bazlı kategoriler için offset değerini bul (varsa)
+      let offset = 0;
+      if (column.is_meter_based && pendingSelection) {
+        const selectedOption = column.options.find((opt) => opt.value === value);
+        offset = selectedOption?.offset || 0;
+      }
+
+      const result = await addPricingOption(columnName, value, price, discount, offset);
+      
+      if (result.success) {
+        // Başarılı - dropdown'ları yeniden yükle
+        await loadOptions();
+        console.log('DB\'ye başarıyla kaydedildi:', result);
+      }
+    } catch (error) {
+      console.error('DB\'ye kaydetme hatası:', error);
+      setError('Veritabanına kaydetme başarısız oldu');
+    }
   };
 
   const handleModalClose = () => {

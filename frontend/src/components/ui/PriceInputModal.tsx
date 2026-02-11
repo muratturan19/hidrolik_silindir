@@ -1,40 +1,50 @@
 import { useState, useEffect } from 'react';
-import { AlertCircle, X, Calculator } from 'lucide-react';
+import { AlertCircle, X, Calculator, Save } from 'lucide-react';
 
 interface PriceInputModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (price: number) => void;
+  onSubmit: (price: number, discount: number, saveToDb: boolean) => void;
   itemName: string;
   itemValue: string;
 }
 
 export function PriceInputModal({ isOpen, onClose, onSubmit, itemName, itemValue }: PriceInputModalProps) {
   const [price, setPrice] = useState<string>('');
+  const [discount, setDiscount] = useState<string>('0');
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
     if (isOpen) {
       setPrice('');
+      setDiscount('0');
       setError('');
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = () => {
+  const handleSubmit = (saveToDb: boolean) => {
     const numPrice = parseFloat(price);
+    const numDiscount = parseFloat(discount);
+    
     if (isNaN(numPrice) || numPrice <= 0) {
       setError('Lütfen geçerli bir fiyat girin');
       return;
     }
-    onSubmit(numPrice);
+    
+    if (isNaN(numDiscount) || numDiscount < 0 || numDiscount > 100) {
+      setError('İskonto 0-100 arası olmalı');
+      return;
+    }
+    
+    onSubmit(numPrice, numDiscount, saveToDb);
     onClose();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSubmit();
+      handleSubmit(false);
     } else if (e.key === 'Escape') {
       onClose();
     }
@@ -69,39 +79,78 @@ export function PriceInputModal({ isOpen, onClose, onSubmit, itemName, itemValue
           {/* Ürün Bilgisi */}
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
             <p className="text-sm text-amber-900 mb-1">
-              <span className="font-semibold">{itemName}</span> kategorisinde
-            </p>
-            <p className="text-lg font-bold text-amber-700">{itemValue}</p>
-            <p className="text-xs text-amber-600 mt-2">
-              Bu ölçünün fiyatı sistemde kayıtlı değil. Lütfen fiyatı öğrenip aşağıya girin.
-            </p>
-          </div>
+              <span ve İskonto Girişi */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Fiyat (EUR) *
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">
+                  €
+                </span>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={(e) => {
+                    setPrice(e.target.value);
+                    setError('');
+                  }}
+                  onKeyDown={handleKeyDown}
+                  autoFocus
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  className={`w-full pl-8 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-lg font-medium ${
+                    error && error.includes('fiyat') ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  }`}
+                />
+              </div>
+            </div>
 
-          {/* Fiyat Girişi */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Fiyat (EUR)
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">
-                €
-              </span>
-              <input
-                type="number"
-                value={price}
-                onChange={(e) => {
-                  setPrice(e.target.value);
-                  setError('');
-                }}
-                onKeyDown={handleKeyDown}
-                autoFocus
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-                className={`w-full pl-8 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-lg font-medium ${
-                  error ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                }`}
-              />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                İskonto (%)
+              </label>
+              <div className="relative">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium">
+                  %
+                </span>
+                <input
+                  type="number"
+                  value={discount}
+                  onChange={(e) => {
+                    setDiscount(e.target.value);
+                    setError('');
+                  }}
+                  onKeyDown={handleKeyDown}space-y-2">
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleSubmit(false)}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-medium rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all shadow-lg shadow-blue-500/25"
+            >
+              <Calculator className="h-4 w-4" />
+              Sadece Şimdi Kullan
+            </button>
+            <button
+              onClick={() => handleSubmit(true)}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg shadow-emerald-500/25"
+            >
+              <Save className="h-4 w-4" />
+              Kaydet ve Kullan
+            </button>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-full px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-100 transition-colors"
+          >
+            İptal
+          {error && (
+            <p className="text-sm text-red-600 flex items-center gap-1">
+              <AlertCircle className="h-4 w-4" />
+              {error}
+            </p>
+          )}
             </div>
             {error && (
               <p className="mt-2 text-sm text-red-600 flex items-center gap-1">

@@ -202,6 +202,24 @@ export async function clearExcelPricing(): Promise<{ success: boolean; message: 
   return response.data;
 }
 
+// Yeni option ekle
+export async function addPricingOption(
+  columnName: string,
+  value: string,
+  price: number,
+  discount: number = 0,
+  offset: number = 0
+): Promise<{ success: boolean; message: string }> {
+  const response = await api.post('/excel-pricing/add-option', {
+    column_name: columnName,
+    value,
+    price,
+    discount,
+    offset
+  });
+  return response.data;
+}
+
 // ===============================
 // Formül Ayarları API
 // ===============================

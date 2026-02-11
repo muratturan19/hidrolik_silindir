@@ -487,6 +487,44 @@ class ExcelPricingService:
             PRICING_DATA_FILE.unlink()
         logger.info("Pricing data cleared")
 
+    def add_option(self, column_name: str, value: str, price: float, discount: float = 0, offset: int = 0) -> dict:
+        """Mevcut kategoriye yeni option ekle"""
+        if not self._pricing_table:
+            raise ValueError("Fiyat tablosu yüklenmemiş")
+
+        # Kategoriyi bul
+        column = next((col for col in self._pricing_table.columns if col.name == column_name), None)
+        if not column:
+            raise ValueError(f"Kategori bulunamadı: {column_name}")
+
+        # Aynı değer var mı kontrol et
+        existing = next((opt for opt in column.options if opt["value"] == value), None)
+        if existing:
+            # Güncelle
+            existing["price"] = price
+            existing["discount"] = discount
+            existing["offset"] = offset
+            logger.info(f"Updated option: {column_name} - {value}")
+        else:
+            # Yeni ekle
+            column.options.append({
+                "value": value,
+                "label": value,
+                "price": price,
+                "discount": discount,
+                "offset": offset
+            })
+            logger.info(f"Added new option: {column_name} - {value}")
+
+        # Kaydet
+        self._save_data()
+
+        return {
+            "column_name": column_name,
+            "value": value,
+            "total_options": len(column.options)
+        }
+
     def update_columns(self, columns_data: list):
         columns = [
             PricingColumn(
