@@ -511,6 +511,8 @@ class ExcelPricingService:
         # Kategoriyi bul
         column = next((col for col in self._pricing_table.columns if col.name == column_name), None)
         if not column:
+            raise ValueError(f"Kategori bulunamadı: {column_name}")
+        
         action = "updated"
         existing = next((opt for opt in column.options if opt["value"] == value), None)
         if existing:
@@ -575,10 +577,7 @@ class ExcelPricingService:
         
         # History'yi son 50 kayıtla sınırla
         if len(self._pricing_table.metadata['update_history']) > 50:
-            self._pricing_table.metadata['update_history'] = self._pricing_table.metadata['update_history'][-50:]   "column_name": column_name,
-            "value": value,
-            "total_options": len(column.options)
-        }
+            self._pricing_table.metadata['update_history'] = self._pricing_table.metadata['update_history'][-50:]
 
     def update_columns(self, columns_data: list):
         columns = [
