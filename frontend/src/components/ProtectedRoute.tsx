@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { APP_CONFIG } from '../config';
 
 const API_BASE = '/hidrolik-api';
 
@@ -11,6 +12,12 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Standalone modda auth kontrolü yapma
+    if (!APP_CONFIG.IS_PORTAL) {
+      setIsAuthenticated(true);
+      setLoading(false);
+      return;
+    }
     checkAuth();
   }, []);
 

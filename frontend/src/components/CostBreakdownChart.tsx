@@ -20,7 +20,7 @@ const COLORS = [
   '#3b82f6', // blue
 ];
 
-export function CostBreakdownChart({ breakdown, currency = 'TRY', exchangeRate = 1 }: CostBreakdownChartProps) {
+export function CostBreakdownChart({ breakdown, currency = 'EUR', exchangeRate = 1 }: CostBreakdownChartProps) {
   const data = Object.entries(breakdown)
     .map(([key, value]) => ({
       name: costLabels[key as keyof CostBreakdown],

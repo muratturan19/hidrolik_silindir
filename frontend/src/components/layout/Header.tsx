@@ -8,9 +8,9 @@ interface Currency {
 }
 
 const currencies: Currency[] = [
-  { code: 'TRY', symbol: '₺', name: 'Türk Lirası' },
-  { code: 'USD', symbol: '$', name: 'Amerikan Doları' },
   { code: 'EUR', symbol: '€', name: 'Euro' },
+  { code: 'USD', symbol: '$', name: 'Amerikan Doları' },
+  { code: 'TRY', symbol: '₺', name: 'Türk Lirası' },
   { code: 'GBP', symbol: '£', name: 'İngiliz Sterlini' },
 ];
 
@@ -29,8 +29,8 @@ export function Header({ sidebarCollapsed, currency, exchangeRate, onCurrencyCha
   const currentCurrency = currencies.find((c) => c.code === currency) || currencies[0];
 
   const handleCurrencySelect = (curr: Currency) => {
-    if (curr.code === 'TRY') {
-      onCurrencyChange('TRY', 1);
+    if (curr.code === 'EUR') {
+      onCurrencyChange('EUR', 1);
       setShowCurrencyModal(false);
     } else {
       setSelectedCurrency(curr);
@@ -77,8 +77,8 @@ export function Header({ sidebarCollapsed, currency, exchangeRate, onCurrencyCha
             <Coins className="h-4 w-4 text-gray-500" />
             <span className="font-medium text-gray-700">{currentCurrency.symbol}</span>
             <span className="text-sm text-gray-500">{currentCurrency.code}</span>
-            {currency !== 'TRY' && (
-              <span className="text-xs text-gray-400">(1 TRY = {(1/exchangeRate).toFixed(4)})</span>
+            {currency !== 'EUR' && (
+              <span className="text-xs text-gray-400">(1 EUR = {exchangeRate.toFixed(4)} {currency})</span>
             )}
             <ChevronDown className="h-4 w-4 text-gray-400" />
           </button>
@@ -150,13 +150,13 @@ export function Header({ sidebarCollapsed, currency, exchangeRate, onCurrencyCha
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Döviz Kuru (1 {selectedCurrency.code} = ? TRY)
+                      Döviz Kuru (1 EUR = ? {selectedCurrency.code})
                     </label>
                     <input
                       type="number"
                       value={rateInput}
                       onChange={(e) => setRateInput(e.target.value)}
-                      placeholder="Örn: 32.50"
+                      placeholder="Örn: 1.10"
                       step="0.0001"
                       className="
                         w-full px-4 py-3 rounded-xl border border-gray-200
@@ -166,7 +166,7 @@ export function Header({ sidebarCollapsed, currency, exchangeRate, onCurrencyCha
                       autoFocus
                     />
                     <p className="text-xs text-gray-500 mt-2 text-center">
-                      Tüm TL fiyatları bu kura bölünerek {selectedCurrency.code}'ye çevrilecek
+                      Tüm EUR fiyatları bu kurla çarpılarak {selectedCurrency.code}'ye çevrilecek
                     </p>
                   </div>
 

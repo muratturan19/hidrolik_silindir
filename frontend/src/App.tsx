@@ -6,6 +6,7 @@ import { CalculatorPage, ParametersPage, ExcelSettingsPage, UserManagementPage }
 import type { PricingParameters, UserInfo } from './types';
 import { defaultPricingParameters } from './types';
 import { checkAuth } from './services/api';
+import { APP_CONFIG } from './config';
 
 // LocalStorage keys
 const STORAGE_KEYS = {
@@ -55,7 +56,15 @@ function App() {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   useEffect(() => {
-     checkAuth().then(setUserInfo);
+    // Standalone modda her zaman admin olarak çalış
+    if (!APP_CONFIG.IS_PORTAL) {
+      setUserInfo({
+        username: 'admin',
+        is_admin: true
+      });
+      return;
+    }
+    checkAuth().then(setUserInfo);
   }, []);
 
   const [exchangeRate, setExchangeRate] = useState(() => {
