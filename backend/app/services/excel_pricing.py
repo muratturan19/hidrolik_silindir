@@ -389,9 +389,12 @@ class ExcelPricingService:
             "metadata": self._pricing_table.metadata
         }
 
-    def calculate_price(self, selections: dict, stroke_mm: float = 0) -> dict:
+    def calculate_price(self, selections: dict, stroke_mm: float = 0, manual_prices: dict = None) -> dict:
         if not self._pricing_table:
             return {"success": False, "error": "Fiyat tablosu yüklenmemiş"}
+
+        if manual_prices is None:
+            manual_prices = {}
 
         items = []
         total = 0
@@ -404,6 +407,28 @@ class ExcelPricingService:
 
             for opt in col.options:
                 if opt["value"] == selected_value:
+                    # Manuel fiyat kontrolü
+                    manual_price_key = f"{col.name}:{selected_value}"
+                    if manual_price_key in manual_prices:
+                        # Manuel fiyat kullan
+                        manual_price = manual_prices[manual_price_key]
+                        discount = opt.get("discount", 0)
+                        price_after_discount = manual_price * (1 - discount / 100)
+
+                        items.append({
+                            "name": col.display_name,
+                            "value": selected_value,
+                            "unit_price": manual_price,
+                            "unit": "€/adet (Manuel)",
+                            "quantity": 1,
+                            "discount_percent": discount,
+                            "price_before_discount": round(manual_price, 2),
+                            "price": round(price_after_discount, 2),
+                            "is_manual": True
+                        })
+                        total += price_after_discount
+                        break
+
                     unit_price = opt.get("price", 0)
                     discount = opt.get("discount", 0)
                     offset = opt.get("offset", 0)

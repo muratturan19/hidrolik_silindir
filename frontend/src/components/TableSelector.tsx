@@ -7,6 +7,7 @@ import {
   type ExcelPricingColumn,
   type ExcelPriceResult,
 } from '../services/api';
+import { PriceInputModal } from './ui/PriceInputModal';
 
 interface TableSelectorProps {
   currency: string;
@@ -18,9 +19,15 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
   const [isCalculating, setIsCalculating] = useState(false);
   const [columns, setColumns] = useState<ExcelPricingColumn[]>([]);
   const [selections, setSelections] = useState<Record<string, string>>({});
+  const [manualPrices, setManualPrices] = useState<Record<string, number>>({});
   const [strokeMm, setStrokeMm] = useState<number>(500);
   const [priceResult, setPriceResult] = useState<ExcelPriceResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // Modal state
+  const [showPriceModal, setShowPriceModal] = useState(false);
+  const [pendingSelection, setPendingSelection] = useState<{ columnName: string; value: string } | null>(null);
+  const [modalItemInfo, setModalItemInfo] = useState<{ name: string; value: string }>({ name: '', value: '' });
 
 
   useEffect(() => {
@@ -45,11 +52,61 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
   };
 
   const handleSelectionChange = (columnName: string, value: string) => {
+    // YOK seçiliyorsa direkt kabul et
+    if (value === 'YOK' || value === '') {
+      setSelections((prev) => ({
+        ...prev,
+        [columnName]: value,
+      }));
+      setPriceResult(null);
+      return;
+    }
+
+    // Seçilen option'ı bul
+    const column = columns.find((col) => col.name === columnName);
+    if (!column) return;, manualPrices
+
+    const selectedOption = column.options.find((opt) => opt.value === value);
+    
+    // Fiyat 0 ise modal aç
+    if (selectedOption && selectedOption.price === 0) {
+      setPendingSelection({ columnName, value });
+      setModalItemInfo({ name: column.display_name, value: selectedOption.label });
+      setShowPriceModal(true);
+      return;
+    }
+
+    // Normal seçim
     setSelections((prev) => ({
       ...prev,
       [columnName]: value,
     }));
     setPriceResult(null);
+  };
+
+  const handleManualPriceSubmit = (price: number) => {
+    if (!pendingSelection) return;
+
+    // Manuel fiyatı kaydet
+    const key = `${pendingSelection.columnName}:${pendingSelection.value}`;
+    setManualPrices((prev) => ({
+      ...prev,
+      [key]: price,
+    }));
+
+    // Seçimi kaydet
+    setSelections((prev) => ({
+      ...prev,
+      [pendingSelection.columnName]: pendingSelection.value,
+    }));
+
+    setPriceResult(null);
+    setPendingSelection(null);
+  };
+
+  const handleModalClose = () => {
+    setShowPriceModal(false);
+    setPendingSelection(null);
   };
 
   const handleCalculate = async () => {
@@ -246,6 +303,15 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
           </div>
         </div>
       )}
+
+      {/* Manuel Fiyat Giriş Modal */}
+      <PriceInputModal
+        isOpen={showPriceModal}
+        onClose={handleModalClose}
+        onSubmit={handleManualPriceSubmit}
+        itemName={modalItemInfo.name}
+        itemValue={modalItemInfo.value}
+      />
     </div>
   );
 }

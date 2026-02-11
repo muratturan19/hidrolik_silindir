@@ -174,9 +174,14 @@ export async function getExcelPricingOptions(): Promise<ExcelPricingOptions> {
 // Fiyat hesapla
 export async function calculateExcelPrice(
   selections: Record<string, string>,
-  stroke_mm: number = 0
+  stroke_mm: number = 0,
+  manual_prices?: Record<string, number>
 ): Promise<ExcelPriceResult> {
-  const response = await api.post('/excel-pricing/calculate', { selections, stroke_mm });
+  const response = await api.post('/excel-pricing/calculate', { 
+    selections, 
+    stroke_mm,
+    manual_prices: manual_prices || {}
+  });
   return response.data;
 }
 
