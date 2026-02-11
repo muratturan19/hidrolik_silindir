@@ -10,6 +10,7 @@ import {
   Plus,
   X,
   Edit3,
+  Download,
 } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import {
@@ -315,7 +316,7 @@ export function ExcelSettingsPage() {
                   download="fiyat_tablosu_ornegi.xlsx"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
                 >
-                  <Upload className="h-4 w-4" />
+                  <Download className="h-4 w-4" />
                   Şablon İndir
                 </a>
               </div>
