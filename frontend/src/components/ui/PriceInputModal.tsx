@@ -79,7 +79,14 @@ export function PriceInputModal({ isOpen, onClose, onSubmit, itemName, itemValue
           {/* Ürün Bilgisi */}
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
             <p className="text-sm text-amber-900 mb-1">
-              <span ve İskonto Girişi */}
+              <span className="font-semibold">{itemName}:</span> {itemValue}
+            </p>
+            <p className="text-xs text-amber-700">
+              Bu ürün için fiyat bilgisi bulunamadı. Lütfen manuel olarak giriniz.
+            </p>
+          </div>
+
+          {/* Fiyat ve İskonto Girişi */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -123,7 +130,30 @@ export function PriceInputModal({ isOpen, onClose, onSubmit, itemName, itemValue
                     setDiscount(e.target.value);
                     setError('');
                   }}
-                  onKeyDown={handleKeyDown}space-y-2">
+                  onKeyDown={handleKeyDown}
+                  step="1"
+                  min="0"
+                  max="100"
+                  placeholder="0"
+                  className={`w-full pl-4 pr-8 py-3 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-lg font-medium ${
+                    error && error.includes('İskonto') ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  }`}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Error mesajı */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="bg-gray-50 px-6 py-4 space-y-2">
           <div className="flex gap-2">
             <button
               onClick={() => handleSubmit(false)}
@@ -145,36 +175,6 @@ export function PriceInputModal({ isOpen, onClose, onSubmit, itemName, itemValue
             className="w-full px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-100 transition-colors"
           >
             İptal
-          {error && (
-            <p className="text-sm text-red-600 flex items-center gap-1">
-              <AlertCircle className="h-4 w-4" />
-              {error}
-            </p>
-          )}
-            </div>
-            {error && (
-              <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                <AlertCircle className="h-4 w-4" />
-                {error}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="bg-gray-50 px-6 py-4 flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition-colors"
-          >
-            İptal
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg shadow-amber-500/25"
-          >
-            <Calculator className="h-4 w-4" />
-            Onayla
           </button>
         </div>
       </div>
