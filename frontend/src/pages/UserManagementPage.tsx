@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Users, UserPlus, Trash2, Key, Shield, User, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = '/hidrolik-api';
 
 interface UserInfo {
   username: string;

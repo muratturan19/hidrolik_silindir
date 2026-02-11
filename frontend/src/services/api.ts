@@ -2,17 +2,34 @@ import axios from 'axios';
 import type {
   ManualPricingRequest,
   PricingResult,
-  ImageAnalysisResult
+  ImageAnalysisResult,
+  UserInfo
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/hidrolik-api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true, // Important for cookies
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// Check Authentication
+export async function checkAuth(): Promise<UserInfo> {
+  try {
+    const response = await api.get<UserInfo>('/auth/me');
+    return response.data;
+  } catch (error) {
+    return {
+      username: '',
+      role: 'guest',
+      is_admin: false,
+      isAuthenticated: false
+    };
+  }
+}
 
 // Manuel fiyatlandırma hesapla
 export async function calculatePricing(

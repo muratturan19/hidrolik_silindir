@@ -52,6 +52,15 @@ export interface ImageAnalysisResult {
   confidence: number;
   raw_analysis?: string;
   error_message?: string;
+  message?: string;
+  image_url?: string;
+}
+
+export interface UserInfo {
+  username: string;
+  role: string;
+  is_admin: boolean;
+  isAuthenticated: boolean;
 }
 
 // Manuel Fiyatlandırma İsteği
@@ -276,3 +285,9 @@ export const defaultPricingParameters: PricingParameters = {
   },
   assembly_hours: 1.5,            // 1.5 saat montaj
 };
+
+export interface UserInfo {
+  username: string;
+  is_admin: boolean;
+  isAuthenticated: boolean;
+}

@@ -2,14 +2,16 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import type { UserInfo } from '../../types';
 
 interface LayoutProps {
   currency: string;
   exchangeRate: number;
   onCurrencyChange: (currency: string, rate: number) => void;
+  userInfo: UserInfo | null;
 }
 
-export function Layout({ currency, exchangeRate, onCurrencyChange }: LayoutProps) {
+export function Layout({ currency, exchangeRate, onCurrencyChange, userInfo }: LayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
@@ -17,6 +19,7 @@ export function Layout({ currency, exchangeRate, onCurrencyChange }: LayoutProps
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        userInfo={userInfo}
       />
       <Header
         sidebarCollapsed={sidebarCollapsed}

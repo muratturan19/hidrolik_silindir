@@ -1,0 +1,12 @@
+{
+  "admin": {
+    "username": "admin",
+    "password_hash": "3eb3fe66b31e3b4d10fa70b5cad49c7112294af6ae4e476a1c405155d45aa121",
+    "is_admin": true
+  },
+  "Vedat": {
+    "username": "Vedat",
+    "password_hash": "67d18d87ef208b37137d5cf349de62528e6cda8ceddcb990cd3903ee284b345e",
+    "is_admin": true
+  }
+}

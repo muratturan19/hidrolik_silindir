@@ -2,6 +2,12 @@
 
 Hidrolik silindir imalat maliyetlerini hesaplamak için geliştirilmiş, GPT-5.2 destekli akıllı fiyatlandırma uygulaması.
 
+### Güncel Durum (Şubat 2026) - "Tek Kod Tabanı" Entegrasyonu
+Bu proje, "Strateji 1: Smart Config" prensibine göre Delta Portal'a entegre edilmiştir.
+- **Portal Modu:** `deploy_hidrolik_v2.ps1` ile sunucuya atıldığında `VITE_APP_MODE=PORTAL` ile çalışır. "Portala Dön" butonu aktif olur.
+- **Standalone Modu:** Yerel geliştirme sırasında kendi kendine çalışır.
+- **Veri Güvenliği:** Dağıtım sırasında veritabanı dosyaları korunur.
+
 ## Özellikler
 
 - **Teknik Resim Analizi**: GPT-5.2 ile teknik resimlerden otomatik ölçü çıkarma

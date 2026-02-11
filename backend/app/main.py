@@ -2,7 +2,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .config import get_settings
-from .routers import pricing_router, analysis_router, excel_pricing_router, users_router
+from .routers import pricing_router, analysis_router, excel_pricing_router, users_router, auth_router
 
 # Logging configuration
 logging.basicConfig(
@@ -41,7 +41,7 @@ app = FastAPI(
 # CORS ayarları
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -52,6 +52,7 @@ app.include_router(pricing_router)
 app.include_router(analysis_router)
 app.include_router(excel_pricing_router)
 app.include_router(users_router)
+app.include_router(auth_router)
 
 
 @app.get("/")

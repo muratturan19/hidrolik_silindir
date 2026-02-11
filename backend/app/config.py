@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     seal_kit_base_price: float = 250.0  # Conta takımı baz fiyat
     labor_cost_per_hour: float = 350.0  # İşçilik saatlik
 
+    # Auth
+    secret_key: str = "delta_super_gizli_anahtar_2026"
+
+
     # Malzeme yoğunlukları (g/cm³)
     steel_density: float = 7.85
     aluminum_density: float = 2.70

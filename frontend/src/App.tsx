@@ -3,8 +3,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { CalculatorPage, ParametersPage, ExcelSettingsPage, UserManagementPage } from './pages';
-import type { PricingParameters } from './types';
+import type { PricingParameters, UserInfo } from './types';
 import { defaultPricingParameters } from './types';
+import { checkAuth } from './services/api';
 
 // LocalStorage keys
 const STORAGE_KEYS = {
@@ -48,8 +49,14 @@ function deepMerge<T extends object>(defaults: T, saved: Partial<T> | null): T {
 
 function App() {
   const [currency, setCurrency] = useState(() => {
-    return localStorage.getItem(STORAGE_KEYS.CURRENCY) || 'TRY';
+    return localStorage.getItem(STORAGE_KEYS.CURRENCY) || 'EUR';
   });
+
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+
+  useEffect(() => {
+     checkAuth().then(setUserInfo);
+  }, []);
 
   const [exchangeRate, setExchangeRate] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.EXCHANGE_RATE);
@@ -93,7 +100,7 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
         <Route
           path="/"
@@ -102,6 +109,7 @@ function App() {
               currency={currency}
               exchangeRate={exchangeRate}
               onCurrencyChange={handleCurrencyChange}
+              userInfo={userInfo}
             />
           }
         >

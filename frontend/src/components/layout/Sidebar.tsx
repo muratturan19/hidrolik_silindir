@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { NavLink } from 'react-router-dom';
 import {
   Calculator,
   Settings,
@@ -10,14 +10,19 @@ import {
   ChevronRight,
   Shield,
   ChevronDown,
-  Lock,
   Users,
+  LogOut,
+  Undo2
 } from 'lucide-react';
-import { PasswordModal, isAdminAuthenticated } from '../ui/PasswordModal';
+import { APP_CONFIG } from '../../config';
+
+
+import type { UserInfo } from '../../types';
 
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  userInfo: UserInfo | null;
 }
 
 const mainNavItems = [
@@ -51,30 +56,17 @@ const adminNavItems = [
   },
 ];
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
-  const navigate = useNavigate();
+export function Sidebar({ collapsed, onToggle, userInfo }: SidebarProps) {
   const [adminExpanded, setAdminExpanded] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [pendingPath, setPendingPath] = useState<string | null>(null);
 
-  const handleAdminItemClick = (path: string, e: React.MouseEvent) => {
-    e.preventDefault();
+  // Auth is strictly coming from props
+  const isAuth = userInfo?.is_admin || false;
 
-    if (isAdminAuthenticated()) {
-      navigate(path);
-    } else {
-      setPendingPath(path);
-      setShowPasswordModal(true);
+  useEffect(() => {
+    if (isAuth) {
+        setAdminExpanded(true);
     }
-  };
-
-  const handlePasswordSuccess = () => {
-    setShowPasswordModal(false);
-    if (pendingPath) {
-      navigate(pendingPath);
-      setPendingPath(null);
-    }
-  };
+  }, [isAuth]);
 
   return (
     <>
@@ -135,8 +127,8 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             </NavLink>
           ))}
 
-          {/* Yönetim Bölümü */}
-          {!collapsed && (
+          {/* Yönetim Bölümü - Only visible to Admins automatically */}
+          {!collapsed && isAuth && (
             <div className="pt-4">
               <button
                 onClick={() => setAdminExpanded(!adminExpanded)}
@@ -159,7 +151,6 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                     <NavLink
                       key={item.path}
                       to={item.path}
-                      onClick={(e) => handleAdminItemClick(item.path, e)}
                       className={({ isActive }) => `
                         flex items-center gap-3 px-3 py-2.5 rounded-xl
                         transition-all duration-200 group
@@ -177,9 +168,6 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                             }`}
                           />
                           <span className="font-medium whitespace-nowrap flex-1">{item.label}</span>
-                          {!isAdminAuthenticated() && (
-                            <Lock className="h-3.5 w-3.5 text-gray-300" />
-                          )}
                         </>
                       )}
                     </NavLink>
@@ -189,22 +177,56 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             </div>
           )}
 
+          {/* Navigation Items (Portal Return) */}
+          {!collapsed && APP_CONFIG.IS_PORTAL && (
+             <div className="pt-4 mt-2 border-t border-gray-100">
+                  <a
+                    href="https://portal.deltaproje.com"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group"
+                  >
+                    <Undo2 className="h-5 w-5 flex-shrink-0" />
+                    <span className="font-medium whitespace-nowrap flex-1 text-left">Portal'a Dön</span>
+                  </a>
+
+                  {userInfo?.isAuthenticated && (
+                     <a
+                     href="https://portal.deltaproje.com/logout"
+                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 group"
+                   >
+                     <LogOut className="h-5 w-5 flex-shrink-0" />
+                     <span className="font-medium whitespace-nowrap flex-1 text-left">Çıkış Yap</span>
+                   </a>
+                  )}
+             </div>
+          )}
+
           {/* Collapsed durumda admin ikonları */}
           {collapsed && (
             <div className="pt-4 border-t border-gray-100 mt-4 space-y-1">
-              {adminNavItems.map((item) => (
-                <button
+              {isAuth && adminNavItems.map((item) => (
+                <NavLink
                   key={item.path}
-                  onClick={(e) => handleAdminItemClick(item.path, e)}
-                  className="w-full flex items-center justify-center px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group relative"
+                  to={item.path}
+                  className={({ isActive }) => `
+                    flex items-center justify-center px-3 py-2.5 rounded-xl
+                    transition-all duration-200 group
+                    ${isActive ? 'bg-amber-50' : 'hover:bg-gray-50'}
+                  `}
                   title={item.label}
                 >
-                  <item.icon className="h-5 w-5 text-gray-400 group-hover:text-gray-600" />
-                  {!isAdminAuthenticated() && (
-                    <Lock className="h-2.5 w-2.5 text-amber-500 absolute top-1.5 right-1.5" />
-                  )}
-                </button>
+                  <item.icon className={`h-5 w-5 ${item.path.includes('users') ? '' : ''}`} />
+                </NavLink>
               ))}
+
+              {APP_CONFIG.IS_PORTAL && (
+              <a
+                href="https://portal.deltaproje.com"
+                className="w-full flex items-center justify-center px-3 py-2.5 rounded-xl text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-all duration-200"
+                title="Portal'a Dön"
+              >
+                <Undo2 className="h-5 w-5" />
+              </a>
+              )}
             </div>
           )}
         </nav>
@@ -239,16 +261,6 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           </div>
         )}
       </aside>
-
-      {/* Password Modal */}
-      <PasswordModal
-        isOpen={showPasswordModal}
-        onClose={() => {
-          setShowPasswordModal(false);
-          setPendingPath(null);
-        }}
-        onSuccess={handlePasswordSuccess}
-      />
     </>
   );
 }

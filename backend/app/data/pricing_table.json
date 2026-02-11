@@ -1,0 +1,655 @@
+{
+  "columns": [
+    {
+      "name": "boru_olcusu",
+      "display_name": "BORU ÖLÇÜSÜ",
+      "options": [
+        {
+          "value": "Ø40/50",
+          "label": "Ø40/50",
+          "price": 29.33
+        },
+        {
+          "value": "Ø50/60",
+          "label": "Ø50/60",
+          "price": 35.28
+        },
+        {
+          "value": "Ø63/75",
+          "label": "Ø63/75",
+          "price": 53.08
+        },
+        {
+          "value": "Ø80/95",
+          "label": "Ø80/95",
+          "price": 76.93
+        },
+        {
+          "value": "Ø100/115",
+          "label": "Ø100/115",
+          "price": 94.35
+        },
+        {
+          "value": "Ø125/145",
+          "label": "Ø125/145",
+          "price": 158.95
+        },
+        {
+          "value": "Ø140/160",
+          "label": "Ø140/160",
+          "price": 176.8
+        },
+        {
+          "value": "Ø160/180",
+          "label": "Ø160/180",
+          "price": 206
+        },
+        {
+          "value": "Ø200/230",
+          "label": "Ø200/230",
+          "price": 391
+        },
+        {
+          "value": "Ø220/254",
+          "label": "Ø220/254",
+          "price": 473.25
+        },
+        {
+          "value": "Ø220/270",
+          "label": "Ø220/270",
+          "price": 817.7
+        },
+        {
+          "value": "Ø250/300",
+          "label": "Ø250/300",
+          "price": 918
+        }
+      ],
+      "is_meter_based": true,
+      "formula_add_mm": 120
+    },
+    {
+      "name": "arka_kapak",
+      "display_name": "ARKA KAPAK",
+      "options": [
+        {
+          "value": "Ø40/50",
+          "label": "Ø40/50",
+          "price": 3.39
+        },
+        {
+          "value": "Ø50/60",
+          "label": "Ø50/60",
+          "price": 4.1
+        },
+        {
+          "value": "Ø63/75",
+          "label": "Ø63/75",
+          "price": 5.64
+        },
+        {
+          "value": "Ø80/95",
+          "label": "Ø80/95",
+          "price": 8.81
+        },
+        {
+          "value": "Ø100/115",
+          "label": "Ø100/115",
+          "price": 12.39
+        },
+        {
+          "value": "Ø125/145",
+          "label": "Ø125/145",
+          "price": 20.64
+        },
+        {
+          "value": "Ø140/160",
+          "label": "Ø140/160",
+          "price": 24.96
+        },
+        {
+          "value": "Ø160/180",
+          "label": "Ø160/180",
+          "price": 31.44
+        },
+        {
+          "value": "Ø200/230",
+          "label": "Ø200/230",
+          "price": 54.33
+        },
+        {
+          "value": "Ø220/254",
+          "label": "Ø220/254",
+          "price": 68
+        },
+        {
+          "value": "Ø220/270",
+          "label": "Ø220/270",
+          "price": 82
+        },
+        {
+          "value": "Ø250/300",
+          "label": "Ø250/300",
+          "price": 95
+        }
+      ],
+      "is_meter_based": false,
+      "formula_add_mm": 0
+    },
+    {
+      "name": "piston",
+      "display_name": "PİSTON",
+      "options": [
+        {
+          "value": "Ø40",
+          "label": "Ø40",
+          "price": 2.58
+        },
+        {
+          "value": "Ø50",
+          "label": "Ø50",
+          "price": 3.05
+        },
+        {
+          "value": "Ø63",
+          "label": "Ø63",
+          "price": 4.23
+        },
+        {
+          "value": "Ø80",
+          "label": "Ø80",
+          "price": 1.23
+        },
+        {
+          "value": "Ø100",
+          "label": "Ø100",
+          "price": 7.38
+        },
+        {
+          "value": "Ø125",
+          "label": "Ø125",
+          "price": 10.84
+        },
+        {
+          "value": "Ø140",
+          "label": "Ø140",
+          "price": 17.46
+        },
+        {
+          "value": "Ø160",
+          "label": "Ø160",
+          "price": 24.95
+        },
+        {
+          "value": "Ø200",
+          "label": "Ø200",
+          "price": 32.89
+        },
+        {
+          "value": "Ø220",
+          "label": "Ø220",
+          "price": 61.95
+        },
+        {
+          "value": "Ø250",
+          "label": "Ø250",
+          "price": 102.9
+        }
+      ],
+      "is_meter_based": false,
+      "formula_add_mm": 0
+    },
+    {
+      "name": "flans",
+      "display_name": "FLANŞ",
+      "options": [
+        {
+          "value": "Ø40",
+          "label": "Ø40",
+          "price": 2.58
+        },
+        {
+          "value": "Ø50",
+          "label": "Ø50",
+          "price": 3.05
+        },
+        {
+          "value": "Ø63",
+          "label": "Ø63",
+          "price": 4.23
+        },
+        {
+          "value": "Ø80",
+          "label": "Ø80",
+          "price": 1.23
+        },
+        {
+          "value": "Ø100",
+          "label": "Ø100",
+          "price": 7.38
+        },
+        {
+          "value": "Ø125",
+          "label": "Ø125",
+          "price": 10.84
+        },
+        {
+          "value": "Ø140",
+          "label": "Ø140",
+          "price": 17.46
+        },
+        {
+          "value": "Ø160",
+          "label": "Ø160",
+          "price": 24.95
+        },
+        {
+          "value": "Ø200",
+          "label": "Ø200",
+          "price": 32.89
+        },
+        {
+          "value": "Ø220",
+          "label": "Ø220",
+          "price": 61.95
+        },
+        {
+          "value": "Ø250",
+          "label": "Ø250",
+          "price": 102.9
+        }
+      ],
+      "is_meter_based": false,
+      "formula_add_mm": 0
+    },
+    {
+      "name": "terazi",
+      "display_name": "TERAZİ",
+      "options": [
+        {
+          "value": "Ø40",
+          "label": "Ø40",
+          "price": 2.58
+        },
+        {
+          "value": "Ø50",
+          "label": "Ø50",
+          "price": 3.05
+        },
+        {
+          "value": "Ø63",
+          "label": "Ø63",
+          "price": 4.23
+        },
+        {
+          "value": "Ø80",
+          "label": "Ø80",
+          "price": 1.23
+        },
+        {
+          "value": "Ø100",
+          "label": "Ø100",
+          "price": 7.38
+        },
+        {
+          "value": "Ø125",
+          "label": "Ø125",
+          "price": 10.84
+        },
+        {
+          "value": "Ø140",
+          "label": "Ø140",
+          "price": 17.46
+        },
+        {
+          "value": "Ø160",
+          "label": "Ø160",
+          "price": 24.95
+        },
+        {
+          "value": "Ø200",
+          "label": "Ø200",
+          "price": 32.89
+        },
+        {
+          "value": "Ø220",
+          "label": "Ø220",
+          "price": 61.95
+        },
+        {
+          "value": "Ø250",
+          "label": "Ø250",
+          "price": 102.9
+        }
+      ],
+      "is_meter_based": false,
+      "formula_add_mm": 0
+    },
+    {
+      "name": "kromlu_mil_olcusu",
+      "display_name": "KROMLU  MİL ÖLÇÜSÜ",
+      "options": [
+        {
+          "value": "Ø28",
+          "label": "Ø28",
+          "price": 17.06
+        },
+        {
+          "value": "Ø36",
+          "label": "Ø36",
+          "price": 27.88
+        },
+        {
+          "value": "Ø40",
+          "label": "Ø40",
+          "price": 33.55
+        },
+        {
+          "value": "Ø45",
+          "label": "Ø45",
+          "price": 42.42
+        },
+        {
+          "value": "Ø56",
+          "label": "Ø56",
+          "price": 67.3
+        },
+        {
+          "value": "Ø70",
+          "label": "Ø70",
+          "price": 103.46
+        },
+        {
+          "value": "Ø80",
+          "label": "Ø80",
+          "price": 133.21
+        },
+        {
+          "value": "Ø90",
+          "label": "Ø90",
+          "price": 164.65
+        },
+        {
+          "value": "Ø100",
+          "label": "Ø100",
+          "price": 193.13
+        },
+        {
+          "value": "Ø110",
+          "label": "Ø110",
+          "price": 280.33
+        },
+        {
+          "value": "Ø140",
+          "label": "Ø140",
+          "price": 680.64
+        }
+      ],
+      "is_meter_based": true,
+      "formula_add_mm": 150
+    },
+    {
+      "name": "arka_mafsal",
+      "display_name": "ARKA MAFSAL",
+      "options": [
+        {
+          "value": "Ø20",
+          "label": "Ø20",
+          "price": 8.69
+        },
+        {
+          "value": "Ø25",
+          "label": "Ø25",
+          "price": 10.05
+        },
+        {
+          "value": "Ø30",
+          "label": "Ø30",
+          "price": 11.59
+        },
+        {
+          "value": "Ø35",
+          "label": "Ø35",
+          "price": 17.39
+        },
+        {
+          "value": "Ø40",
+          "label": "Ø40",
+          "price": 21.25
+        },
+        {
+          "value": "Ø50",
+          "label": "Ø50",
+          "price": 40.57
+        },
+        {
+          "value": "Ø60",
+          "label": "Ø60",
+          "price": 63.76
+        },
+        {
+          "value": "Ø70",
+          "label": "Ø70",
+          "price": 85.01
+        },
+        {
+          "value": "Ø80",
+          "label": "Ø80",
+          "price": 80.1596428571428
+        },
+        {
+          "value": "Ø90",
+          "label": "Ø90",
+          "price": 90.797619047619
+        },
+        {
+          "value": "Ø100",
+          "label": "Ø100",
+          "price": 101.435595238095
+        },
+        {
+          "value": "Ø110",
+          "label": "Ø110",
+          "price": 112.073571428571
+        },
+        {
+          "value": "Ø120",
+          "label": "Ø120",
+          "price": 122.711547619047
+        },
+        {
+          "value": "Ø125",
+          "label": "Ø125",
+          "price": 133.349523809523
+        },
+        {
+          "value": "Ø130",
+          "label": "Ø130",
+          "price": 143.9875
+        },
+        {
+          "value": "Ø140",
+          "label": "Ø140",
+          "price": 154.625476190476
+        },
+        {
+          "value": "Ø160",
+          "label": "Ø160",
+          "price": 165.263452380952
+        },
+        {
+          "value": "Ø200",
+          "label": "Ø200",
+          "price": 175.901428571428
+        }
+      ],
+      "is_meter_based": false,
+      "formula_add_mm": 0
+    },
+    {
+      "name": "on_bogaz",
+      "display_name": "ÖN BOĞAZ",
+      "options": [
+        {
+          "value": "Ø40",
+          "label": "Ø40",
+          "price": 2.58
+        },
+        {
+          "value": "Ø50",
+          "label": "Ø50",
+          "price": 3.05
+        },
+        {
+          "value": "Ø63",
+          "label": "Ø63",
+          "price": 4.23
+        },
+        {
+          "value": "Ø80",
+          "label": "Ø80",
+          "price": 1.23
+        },
+        {
+          "value": "Ø100",
+          "label": "Ø100",
+          "price": 7.38
+        },
+        {
+          "value": "Ø125",
+          "label": "Ø125",
+          "price": 10.84
+        },
+        {
+          "value": "Ø140",
+          "label": "Ø140",
+          "price": 17.46
+        },
+        {
+          "value": "Ø160",
+          "label": "Ø160",
+          "price": 24.95
+        },
+        {
+          "value": "Ø200",
+          "label": "Ø200",
+          "price": 32.89
+        },
+        {
+          "value": "Ø220",
+          "label": "Ø220",
+          "price": 61.95
+        },
+        {
+          "value": "Ø250",
+          "label": "Ø250",
+          "price": 102.9
+        }
+      ],
+      "is_meter_based": false,
+      "formula_add_mm": 0
+    },
+    {
+      "name": "on_mafsal",
+      "display_name": "ÖN MAFSAL",
+      "options": [
+        {
+          "value": "Ø20",
+          "label": "Ø20",
+          "price": 2.58
+        },
+        {
+          "value": "Ø25",
+          "label": "Ø25",
+          "price": 3.05
+        },
+        {
+          "value": "Ø30",
+          "label": "Ø30",
+          "price": 4.23
+        },
+        {
+          "value": "Ø35",
+          "label": "Ø35",
+          "price": 1.23
+        },
+        {
+          "value": "Ø40",
+          "label": "Ø40",
+          "price": 7.38
+        },
+        {
+          "value": "Ø50",
+          "label": "Ø50",
+          "price": 10.84
+        },
+        {
+          "value": "Ø60",
+          "label": "Ø60",
+          "price": 17.46
+        },
+        {
+          "value": "Ø70",
+          "label": "Ø70",
+          "price": 24.95
+        },
+        {
+          "value": "Ø80",
+          "label": "Ø80",
+          "price": 32.89
+        },
+        {
+          "value": "Ø90",
+          "label": "Ø90",
+          "price": 61.95
+        },
+        {
+          "value": "Ø100",
+          "label": "Ø100",
+          "price": 102.9
+        },
+        {
+          "value": "Ø110",
+          "label": "Ø110",
+          "price": 72.5345454545455
+        },
+        {
+          "value": "Ø120",
+          "label": "Ø120",
+          "price": 80.5409090909091
+        },
+        {
+          "value": "Ø125",
+          "label": "Ø125",
+          "price": 88.5472727272725
+        },
+        {
+          "value": "Ø130",
+          "label": "Ø130",
+          "price": 96.5536363636365
+        },
+        {
+          "value": "Ø140",
+          "label": "Ø140",
+          "price": 104.56
+        },
+        {
+          "value": "Ø160",
+          "label": "Ø160",
+          "price": 112.566363636363
+        },
+        {
+          "value": "Ø200",
+          "label": "Ø200",
+          "price": 120.572727272727
+        }
+      ],
+      "is_meter_based": false,
+      "formula_add_mm": 0
+    }
+  ],
+  "metadata": {
+    "format": "manual_edit",
+    "updated": true
+  }
+}

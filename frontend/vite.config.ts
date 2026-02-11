@@ -4,4 +4,15 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: '/hidrolik/',
+  server: {
+    host: true,
+    proxy: {
+      '/hidrolik-api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/hidrolik-api/, ''),
+      },
+    }
+  }
 })
