@@ -193,37 +193,6 @@ async def get_status() -> Dict[str, Any]:
         }
 
 
-class SettingsUpdateRequest(BaseModel):
-    """Ayar güncelleme isteği"""
-    boru_offset_mm: int = None
-    mil_offset_mm: int = None
-
-
-@router.get("/settings")
-async def get_settings() -> Dict[str, Any]:
-    """Formül ayarlarını getir"""
-    service = get_excel_pricing_service()
-    return {
-        "success": True,
-        **service.get_settings()
-    }
-
-
-@router.put("/settings")
-async def update_settings(request: SettingsUpdateRequest) -> Dict[str, Any]:
-    """Formül ayarlarını güncelle"""
-    service = get_excel_pricing_service()
-    updated = service.update_settings(
-        boru_offset_mm=request.boru_offset_mm,
-        mil_offset_mm=request.mil_offset_mm
-    )
-    return {
-        "success": True,
-        "message": "Ayarlar güncellendi",
-        **updated
-    }
-
-
 @router.post("/add-option")
 async def add_option(request: AddOptionRequest) -> Dict[str, Any]:
     """Mevcut kategoriye yeni option ekle"""

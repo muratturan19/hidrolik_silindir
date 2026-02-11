@@ -223,29 +223,6 @@ export async function addPricingOption(
 // ===============================
 // Formül Ayarları API
 // ===============================
-
-export interface FormulaSettings {
-  boru_offset_mm: number;
-  mil_offset_mm: number;
-  formulas?: {
-    boru: string;
-    mil: string;
-  };
-}
-
-// Formül ayarlarını getir
-export async function getFormulaSettings(): Promise<FormulaSettings & { success: boolean }> {
-  const response = await api.get('/excel-pricing/settings');
-  return response.data;
-}
-
-// Formül ayarlarını güncelle
-export async function updateFormulaSettings(settings: Partial<FormulaSettings>): Promise<{
-  success: boolean;
-  message: string;
-} & FormulaSettings> {
-  const response = await api.put('/excel-pricing/settings', settings);
-  return response.data;
-}
-
+// User Management APIs
+// ===============================
 export default api;
