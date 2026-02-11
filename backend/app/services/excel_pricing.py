@@ -41,7 +41,7 @@ class PricingColumn:
     display_name: str
     options: list[dict] = field(default_factory=list)
     is_meter_based: bool = False
-    formula_add_mm: int = 0
+    formula_add_mm: int = 0  # Deprecated: artık her option'ın kendi offset'i var
 
 
 @dataclass
@@ -230,39 +230,35 @@ class ExcelPricingService:
         return header_rows if header_rows else [0]
 
     def parse_excel(self, file_bytes: bytes, filename: str) -> dict:
-        """Excel dosyasını parse et - çoklu bölüm destekli"""
+        """Excel dosyasını parse et - multi-sheet format"""
         import io
 
         try:
-            # Header olmadan oku
-            df = pd.read_excel(io.BytesIO(file_bytes), engine='openpyxl', header=None)
-            logger.info(f"Excel: {df.shape[0]} rows, {df.shape[1]} columns")
+            # Tüm sheet'leri oku
+            excel_file = pd.ExcelFile(io.BytesIO(file_bytes), engine='openpyxl')
+            sheet_names = excel_file.sheet_names
+            logger.info(f"Excel: {len(sheet_names)} sheets found: {sheet_names}")
 
-            # Başlık satırlarını bul
-            header_rows = self._find_header_rows(df)
-            logger.info(f"Found header rows: {header_rows}")
-
-            # Her bölümü ayrı parse et
             all_categories = {}
 
-            for i, header_row in enumerate(header_rows):
-                # Bölümün bitiş satırını bul
-                if i + 1 < len(header_rows):
-                    end_row = header_rows[i + 1]
-                else:
-                    end_row = len(df)
+            for sheet_name in sheet_names:
+                logger.info(f"Parsing sheet: {sheet_name}")
+                
+                # Sheet'i oku
+                df = pd.read_excel(io.BytesIO(file_bytes), sheet_name=sheet_name, engine='openpyxl', header=None)
+                
+                if len(df) < 2:  # En az header + 1 satır olmalı
+                    logger.warning(f"Sheet {sheet_name} is too small, skipping")
+                    continue
 
-                logger.info(f"Parsing section {i+1}: rows {header_row} to {end_row}")
+                # İlk satır header
+                headers = df.iloc[0].values
+                data_rows = df.iloc[1:]
 
-                # Başlık satırını al
-                headers = df.iloc[header_row].values
-
-                # Veri satırlarını al
-                data_rows = df.iloc[header_row + 1:end_row]
-
-                # Bu bölümdeki kategorileri parse et
-                section_categories = self._parse_section(headers, data_rows)
-                all_categories.update(section_categories)
+                # Sheet'i parse et
+                sheet_data = self._parse_sheet(sheet_name, headers, data_rows)
+                if sheet_data:
+                    all_categories[sheet_name] = sheet_data
 
             # PricingTable oluştur
             columns_list = [
@@ -279,18 +275,17 @@ class ExcelPricingService:
             self._pricing_table = PricingTable(
                 columns=columns_list,
                 metadata={
-                    "format": "multi_section",
-                    "sections": len(header_rows),
-                    "row_count": len(df),
-                    "column_count": len(columns_list)
+                    "format": "multi_sheet",
+                    "sheets": len(sheet_names),
+                    "categories": len(columns_list)
                 }
             )
             self._save_data()
 
             return {
                 "success": True,
-                "format": "multi_section",
-                "sections": len(header_rows),
+                "format": "multi_sheet",
+                "sheets": len(sheet_names),
                 "categories": list(all_categories.keys()),
                 "total_options": sum(len(data["options"]) for data in all_categories.values()),
                 "meter_based_columns": [cat for cat, data in all_categories.items() if data["is_meter_based"]]
@@ -300,75 +295,80 @@ class ExcelPricingService:
             logger.error(f"Excel parse error: {e}", exc_info=True)
             raise ValueError(f"Excel dosyası okunamadı: {str(e)}")
 
-    def _parse_section(self, headers, data_rows: pd.DataFrame) -> dict:
-        """Bir bölümü parse et - sütun çiftlerini bul"""
-        categories = {}
-
-        # Sütun çiftlerini bul: [Değer] [Fiyat] [Boş] [Değer] [Fiyat] [Boş] ...
-        i = 0
-        while i < len(headers):
-            header = headers[i]
-
-            # Boş sütunu atla
-            if pd.isna(header) or str(header).strip() == '':
-                i += 1
+    def _parse_sheet(self, sheet_name: str, headers, data_rows: pd.DataFrame) -> dict:
+        """Bir sheet'i parse et - her sheet bir kategori"""
+        
+        # Sheet adını kategoriye çevir
+        category_name = sheet_name.replace('_', ' ').title()
+        
+        # Sütunları belirle - ilk boş olmayan sütundan başla
+        value_col = None
+        price_col = None
+        offset_col = None
+        discount_col = None
+        
+        for i, header in enumerate(headers):
+            if pd.isna(header):
                 continue
-
+            
             header_str = str(header).strip().replace('\n', ' ')
-
-            # Fiyat sütunu mu?
-            if self._is_price_column(header_str):
-                i += 1
-                continue
-
-            # Değer sütunu - sonraki fiyat sütununu bul
-            value_col = i
-            price_col = None
-
-            if i + 1 < len(headers):
-                next_header = headers[i + 1]
-                if pd.notna(next_header) and self._is_price_column(str(next_header)):
-                    price_col = i + 1
-
-            logger.info(f"Category: {header_str}, value_col={value_col}, price_col={price_col}")
-
-            # Değerleri topla
-            options = []
-            seen_values = set()
-
-            for _, row in data_rows.iterrows():
-                value = row.iloc[value_col] if value_col < len(row) else None
-                price = row.iloc[price_col] if price_col and price_col < len(row) else 0
-
-                if pd.notna(value) and str(value).strip():
-                    value_str = str(value).strip()
-
-                    # Aynı değeri tekrar ekleme
-                    if value_str in seen_values:
-                        continue
-                    seen_values.add(value_str)
-
-                    price_float = self._parse_price(price)
-
-                    options.append({
-                        "value": value_str,
-                        "label": value_str,
-                        "price": price_float
-                    })
-
-            if options:
-                is_meter, add_mm = self._is_meter_based(header_str)
-                categories[header_str] = {
-                    "options": options,
-                    "is_meter_based": is_meter,
-                    "formula_add_mm": add_mm
-                }
-                logger.info(f"Added: {header_str} with {len(options)} options, meter_based={is_meter}")
-
-            # Sonraki sütun çiftine geç
-            i += 2 if price_col else 1
-
-        return categories
+            header_norm = self._normalize_turkish(header_str)
+            
+            if value_col is None and not any(kw in header_norm for kw in ['fiyat', 'strok', 'ilave', 'iskonto', 'price']):
+                value_col = i
+            elif self._is_price_column(header_str) and price_col is None:
+                price_col = i
+            elif 'strok' in header_norm or 'ilave' in header_norm:
+                offset_col = i
+            elif 'iskonto' in header_norm:
+                discount_col = i
+        
+        logger.info(f"Sheet {sheet_name}: value={value_col}, price={price_col}, offset={offset_col}, discount={discount_col}")
+        
+        # Değerleri topla
+        options = []
+        seen_values = set()
+        
+        for _, row in data_rows.iterrows():
+            value = row.iloc[value_col] if value_col is not None and value_col < len(row) else None
+            price = row.iloc[price_col] if price_col is not None and price_col < len(row) else None
+            offset = row.iloc[offset_col] if offset_col is not None and offset_col < len(row) else None
+            discount = row.iloc[discount_col] if discount_col is not None and discount_col < len(row) else 0
+            
+            if pd.notna(value) and str(value).strip():
+                value_str = str(value).strip()
+                
+                # Aynı değeri tekrar ekleme
+                if value_str in seen_values:
+                    continue
+                seen_values.add(value_str)
+                
+                price_float = self._parse_price(price) if pd.notna(price) else 0.0
+                offset_int = int(offset) if pd.notna(offset) else 0
+                discount_float = float(discount) if pd.notna(discount) else 0.0
+                
+                options.append({
+                    "value": value_str,
+                    "label": value_str,
+                    "price": price_float,
+                    "discount": discount_float,
+                    "offset": offset_int
+                })
+        
+        if not options:
+            logger.warning(f"No options found in sheet {sheet_name}")
+            return None
+        
+        # Metre bazlı mı kontrol et
+        is_meter, default_add_mm = self._is_meter_based(category_name)
+        
+        logger.info(f"Parsed {sheet_name}: {len(options)} options, meter_based={is_meter}")
+        
+        return {
+            "options": options,
+            "is_meter_based": is_meter,
+            "formula_add_mm": default_add_mm
+        }
 
     def get_dropdown_options(self) -> dict:
         if not self._pricing_table:
@@ -405,11 +405,17 @@ class ExcelPricingService:
             for opt in col.options:
                 if opt["value"] == selected_value:
                     unit_price = opt.get("price", 0)
+                    discount = opt.get("discount", 0)
+                    offset = opt.get("offset", 0)
 
                     if col.is_meter_based and stroke_mm > 0:
-                        length_mm = stroke_mm + col.formula_add_mm
+                        # Çapa özel offset kullan (yoksa deprecated değer)
+                        length_mm = stroke_mm + (offset if offset > 0 else col.formula_add_mm)
                         length_m = length_mm / 1000.0
                         calculated_price = unit_price * length_m
+                        
+                        # İskonto uygula
+                        price_after_discount = calculated_price * (1 - discount / 100)
 
                         items.append({
                             "name": col.display_name,
@@ -418,20 +424,28 @@ class ExcelPricingService:
                             "unit": "€/m",
                             "length_mm": length_mm,
                             "length_m": round(length_m, 3),
-                            "formula": f"({stroke_mm} + {col.formula_add_mm}) mm × {unit_price} €/m",
-                            "price": round(calculated_price, 2)
+                            "offset_mm": offset if offset > 0 else col.formula_add_mm,
+                            "discount_percent": discount,
+                            "price_before_discount": round(calculated_price, 2),
+                            "formula": f"({stroke_mm} + {offset if offset > 0 else col.formula_add_mm}) mm × {unit_price} €/m × (1 - {discount}%)",
+                            "price": round(price_after_discount, 2)
                         })
-                        total += calculated_price
+                        total += price_after_discount
                     else:
+                        # Sabit fiyat - iskonto uygula
+                        price_after_discount = unit_price * (1 - discount / 100)
+                        
                         items.append({
                             "name": col.display_name,
                             "value": selected_value,
                             "unit_price": unit_price,
                             "unit": "€/adet",
                             "quantity": 1,
-                            "price": unit_price
+                            "discount_percent": discount,
+                            "price_before_discount": round(unit_price, 2),
+                            "price": round(price_after_discount, 2)
                         })
-                        total += unit_price
+                        total += price_after_discount
                     break
 
         return {

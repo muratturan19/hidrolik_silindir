@@ -42,3 +42,10 @@ Thumbs.db
 .coverage
 htmlcov/
 .pytest_cache/
+
+# Test Excel files
+eski.xlsx
+yeni.xlsx
+fiyat_tablosu.xlsx
+fiyat_tablosu_2.xlsx
+fiyat_tablosu_test.xlsx
