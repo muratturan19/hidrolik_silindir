@@ -60,7 +60,9 @@ function App() {
     if (!APP_CONFIG.IS_PORTAL) {
       setUserInfo({
         username: 'admin',
-        is_admin: true
+        is_admin: true,
+        role: 'admin',
+        isAuthenticated: true
       });
       return;
     }

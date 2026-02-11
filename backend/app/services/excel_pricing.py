@@ -59,6 +59,11 @@ class ExcelPricingService:
     def __init__(self):
         self._ensure_data_dir()
         self._pricing_table: Optional[PricingTable] = None
+        # Varsayılan ayarlar
+        self._settings = {
+            "boru_offset_mm": 120,
+            "mil_offset_mm": 150
+        }
         self._load_saved_data()
 
     def _ensure_data_dir(self):

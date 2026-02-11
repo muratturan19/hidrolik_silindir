@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { APP_CONFIG } from '../config';
 import type {
   ManualPricingRequest,
   PricingResult,
@@ -6,7 +7,9 @@ import type {
   UserInfo
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/hidrolik-api';
+const API_BASE_URL = APP_CONFIG.IS_PORTAL 
+  ? 'https://portal.deltaproje.com/hidrolik-api' 
+  : (import.meta.env.VITE_API_URL || 'http://localhost:8000');
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -113,6 +116,7 @@ export interface ExcelPricingColumn {
     value: string;
     label: string;
     price: number;
+    offset?: number;
   }>;
   is_meter_based?: boolean;  // Metre bazlı mı?
   formula_add_mm?: number;   // Strok'a eklenecek mm
@@ -191,6 +195,13 @@ export async function getExcelPricingStatus(): Promise<{
   column_count?: number;
   columns?: string[];
   message?: string;
+  metadata?: {
+    version?: number;
+    last_updated?: string;
+    last_update_type?: string;
+    created_at?: string;
+    update_count?: number;
+  };
 }> {
   const response = await api.get('/excel-pricing/status');
   return response.data;

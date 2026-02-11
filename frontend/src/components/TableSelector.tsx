@@ -149,7 +149,7 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
     setError(null);
 
     try {
-      const result = await calculateExcelPrice(selections, strokeMm);
+      const result = await calculateExcelPrice(selections, strokeMm, manualPrices);
       setPriceResult(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Fiyat hesaplanırken hata oluştu');

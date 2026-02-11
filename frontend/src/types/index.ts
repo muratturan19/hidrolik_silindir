@@ -285,9 +285,3 @@ export const defaultPricingParameters: PricingParameters = {
   },
   assembly_hours: 1.5,            // 1.5 saat montaj
 };
-
-export interface UserInfo {
-  username: string;
-  is_admin: boolean;
-  isAuthenticated: boolean;
-}

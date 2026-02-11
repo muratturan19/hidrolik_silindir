@@ -27,7 +27,18 @@ async def get_current_user_from_token(delta_token: Optional[str] = Cookie(None))
         payload = jwt.decode(delta_token, settings.secret_key, algorithms=["HS256"])
         
         username = payload.get("user")
-        role = payload.get("role", "user")
+        
+        # Extract role from Portal permissions structure
+        permissions = payload.get("permissions", {}) or {}
+        is_platform_admin = payload.get("is_platform_admin", False)
+        
+        # Default to user if no specific permission found
+        # Check specific 'hidrolik' permission or fallback to 'role' legacy field
+        role = permissions.get("hidrolik") or payload.get("role") or "user"
+        
+        # Platform admins are always admins
+        if is_platform_admin:
+            role = "admin"
         
         return {
             "username": username,
