@@ -49,3 +49,6 @@ yeni.xlsx
 fiyat_tablosu.xlsx
 fiyat_tablosu_2.xlsx
 fiyat_tablosu_test.xlsx
+
+backend/app/data/pricing_table.json
+backend/data/users.json
