@@ -49,6 +49,19 @@ class PricingTable:
     """Tam fiyatlandırma tablosu"""
     columns: list[PricingColumn] = field(default_factory=list)
     metadata: dict = field(default_factory=dict)
+    
+    def __post_init__(self):
+        # Her zaman metadata'da temel alanlar olsun
+        if 'created_at' not in self.metadata:
+            from datetime import datetime
+            self.metadata['created_at'] = datetime.now().isoformat()
+        if 'version' not in self.metadata:
+            self.metadata['version'] = 1
+        if 'last_updated' not in self.metadata:
+            from datetime import datetime
+            self.metadata['last_updated'] = datetime.now().isoformat()
+        if 'update_history' not in self.metadata:
+            self.metadata['update_history'] = []
 
 
 class ExcelPricingService:
@@ -277,9 +290,12 @@ class ExcelPricingService:
                 metadata={
                     "format": "multi_sheet",
                     "sheets": len(sheet_names),
-                    "categories": len(columns_list)
+                    "categories": len(columns_list),
+                    "source": "excel_upload",
+                    "filename": filename
                 }
             )
+            self._update_metadata("Excel Upload", f"Loaded {len(sheet_names)} sheets with {len(columns_list)} categories")
             self._save_data()
 
             return {
@@ -495,9 +511,7 @@ class ExcelPricingService:
         # Kategoriyi bul
         column = next((col for col in self._pricing_table.columns if col.name == column_name), None)
         if not column:
-            raise ValueError(f"Kategori bulunamadı: {column_name}")
-
-        # Aynı değer var mı kontrol et
+        action = "updated"
         existing = next((opt for opt in column.options if opt["value"] == value), None)
         if existing:
             # Güncelle
@@ -507,6 +521,7 @@ class ExcelPricingService:
             logger.info(f"Updated option: {column_name} - {value}")
         else:
             # Yeni ekle
+            action = "added"
             column.options.append({
                 "value": value,
                 "label": value,
@@ -516,11 +531,51 @@ class ExcelPricingService:
             })
             logger.info(f"Added new option: {column_name} - {value}")
 
+        # Metadata güncelle
+        self._update_metadata(
+            "Manual Edit", 
+            f"{action.capitalize()} {value} in {column.display_name} (Price: €{price}, Discount: {discount}%)"
+        )
+        
         # Kaydet
         self._save_data()
 
         return {
             "column_name": column_name,
+            "value": value,
+            "total_options": len(column.options),
+            "action": action
+        }
+
+    def _update_metadata(self, update_type: str, description: str):
+        """Metadata güncelle ve history'ye ekle"""
+        from datetime import datetime
+        
+        if not self._pricing_table:
+            return
+        
+        now = datetime.now().isoformat()
+        self._pricing_table.metadata['last_updated'] = now
+        self._pricing_table.metadata['last_update_type'] = update_type
+        
+        # Version artır
+        current_version = self._pricing_table.metadata.get('version', 1)
+        self._pricing_table.metadata['version'] = current_version + 1
+        
+        # History'ye ekle
+        if 'update_history' not in self._pricing_table.metadata:
+            self._pricing_table.metadata['update_history'] = []
+        
+        self._pricing_table.metadata['update_history'].append({
+            'version': self._pricing_table.metadata['version'],
+            'type': update_type,
+            'description': description,
+            'timestamp': now
+        })
+        
+        # History'yi son 50 kayıtla sınırla
+        if len(self._pricing_table.metadata['update_history']) > 50:
+            self._pricing_table.metadata['update_history'] = self._pricing_table.metadata['update_history'][-50:]   "column_name": column_name,
             "value": value,
             "total_options": len(column.options)
         }

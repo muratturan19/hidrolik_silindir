@@ -39,6 +39,15 @@ export function ExcelSettingsPage() {
     field: 'label' | 'price';
   } | null>(null);
 
+  // Metadata
+  const [metadata, setMetadata] = useState<{
+    version?: number;
+    last_updated?: string;
+    last_update_type?: string;
+    created_at?: string;
+    update_count?: number;
+  } | null>(null);
+
   // Formül ayarları
   const [boruOffset, setBoruOffset] = useState<number>(120);
   const [milOffset, setMilOffset] = useState<number>(150);
@@ -82,6 +91,7 @@ export function ExcelSettingsPage() {
     try {
       const status = await getExcelPricingStatus();
       if (status.loaded) {
+        setMetadata(status.metadata || null);
         await loadOptions();
       }
     } catch {
@@ -407,6 +417,84 @@ export function ExcelSettingsPage() {
           </div>
         </CardBody>
       </Card>
+
+      {/* Versiyon ve Metadata Bilgisi */}
+      {tableLoaded && metadata && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Versiyon Bilgileri</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Tablo sürüm ve güncelleme geçmişi
+                </p>
+              </div>
+              <div className="text-sm text-gray-500">
+                v{metadata.version || 1}
+              </div>
+            </div>
+          </CardHeader>
+          <CardBody>
+            <div className="space-y-4">
+              {/* Özet Bilgiler */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100">
+                  <p className="text-xs font-medium text-emerald-700 mb-1">Mevcut Versiyon</p>
+                  <p className="text-2xl font-bold text-emerald-900">v{metadata.version || 1}</p>
+                </div>
+
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                  <p className="text-xs font-medium text-blue-700 mb-1">Son Güncelleme</p>
+                  <p className="text-sm font-semibold text-blue-900">
+                    {metadata.last_updated 
+                      ? new Date(metadata.last_updated).toLocaleString('tr-TR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })
+                      : '-'}
+                  </p>
+                </div>
+
+                <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100">
+                  <p className="text-xs font-medium text-purple-700 mb-1">Toplam Güncelleme</p>
+                  <p className="text-2xl font-bold text-purple-900">{metadata.update_count || 0}</p>
+                </div>
+              </div>
+
+              {/* Ek Bilgiler */}
+              {(metadata.last_update_type || metadata.created_at) && (
+                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    {metadata.last_update_type && (
+                      <div>
+                        <span className="font-medium text-gray-700">Son İşlem: </span>
+                        <span className="text-gray-600">{metadata.last_update_type}</span>
+                      </div>
+                    )}
+                    {metadata.created_at && (
+                      <div>
+                        <span className="font-medium text-gray-700">Oluşturulma: </span>
+                        <span className="text-gray-600">
+                          {new Date(metadata.created_at).toLocaleString('tr-TR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardBody>
+        </Card>
+      )}
 
       {/* Düzenlenebilir Tablo */}
       {tableLoaded && columns.length > 0 && (
