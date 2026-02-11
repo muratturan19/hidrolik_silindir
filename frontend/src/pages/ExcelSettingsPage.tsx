@@ -10,8 +10,6 @@ import {
   Plus,
   X,
   Edit3,
-  Settings,
-  Calculator,
 } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../components/ui/Card';
 import {
@@ -19,8 +17,6 @@ import {
   getExcelPricingStatus,
   uploadExcelPricing,
   clearExcelPricing,
-  getFormulaSettings,
-  updateFormulaSettings,
   type ExcelPricingColumn,
 } from '../services/api';
 import api from '../services/api';
@@ -48,43 +44,9 @@ export function ExcelSettingsPage() {
     update_count?: number;
   } | null>(null);
 
-  // Formül ayarları
-  const [boruOffset, setBoruOffset] = useState<number>(120);
-  const [milOffset, setMilOffset] = useState<number>(150);
-  const [isSavingSettings, setIsSavingSettings] = useState(false);
-
   useEffect(() => {
     checkTableStatus();
-    loadSettings();
   }, []);
-
-  const loadSettings = async () => {
-    try {
-      const settings = await getFormulaSettings();
-      if (settings.success) {
-        setBoruOffset(settings.boru_offset_mm);
-        setMilOffset(settings.mil_offset_mm);
-      }
-    } catch {
-      // Varsayılan değerler kullanılacak
-    }
-  };
-
-  const handleSaveSettings = async () => {
-    setIsSavingSettings(true);
-    setError(null);
-    try {
-      await updateFormulaSettings({
-        boru_offset_mm: boruOffset,
-        mil_offset_mm: milOffset,
-      });
-      setSuccess('Formül ayarları kaydedildi');
-    } catch {
-      setError('Ayarlar kaydedilirken hata oluştu');
-    } finally {
-      setIsSavingSettings(false);
-    }
-  };
 
   const checkTableStatus = async () => {
     setIsLoading(true);
@@ -344,76 +306,6 @@ export function ExcelSettingsPage() {
               <p><strong>Format 2 - Yatay:</strong> Her sütun çifti (Değer | Fiyat)</p>
               <p><strong>Format 3 - Basit:</strong> Her sütun bir kategori</p>
             </div>
-          </div>
-        </CardBody>
-      </Card>
-
-      {/* Formül Ayarları */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Settings className="h-5 w-5 text-gray-500" />
-            <h2 className="text-lg font-semibold text-gray-900">Formül Ayarları</h2>
-          </div>
-          <p className="text-sm text-gray-500 mt-1">
-            Metre bazlı hesaplamalar için strok'a eklenecek değerleri ayarlayın
-          </p>
-        </CardHeader>
-        <CardBody>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Boru Offset */}
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-              <label className="flex items-center gap-2 text-sm font-medium text-blue-700 mb-2">
-                <Calculator className="h-4 w-4" />
-                Boru Hesaplama Offseti (mm)
-              </label>
-              <input
-                type="number"
-                value={boruOffset}
-                onChange={(e) => setBoruOffset(Number(e.target.value))}
-                min={0}
-                step={10}
-                className="w-full px-4 py-2.5 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-lg font-medium"
-              />
-              <p className="mt-2 text-xs text-blue-600">
-                Boru Fiyatı = (Strok + <strong>{boruOffset}mm</strong>) × Metre Fiyatı / 1000
-              </p>
-            </div>
-
-            {/* Mil Offset */}
-            <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100">
-              <label className="flex items-center gap-2 text-sm font-medium text-purple-700 mb-2">
-                <Calculator className="h-4 w-4" />
-                Mil Hesaplama Offseti (mm)
-              </label>
-              <input
-                type="number"
-                value={milOffset}
-                onChange={(e) => setMilOffset(Number(e.target.value))}
-                min={0}
-                step={10}
-                className="w-full px-4 py-2.5 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-lg font-medium"
-              />
-              <p className="mt-2 text-xs text-purple-600">
-                Mil Fiyatı = (Strok + <strong>{milOffset}mm</strong>) × Metre Fiyatı / 1000
-              </p>
-            </div>
-          </div>
-
-          {/* Kaydet Butonu */}
-          <div className="mt-4 flex justify-end">
-            <button
-              onClick={handleSaveSettings}
-              disabled={isSavingSettings}
-              className="flex items-center gap-2 px-4 py-2.5 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors font-medium disabled:opacity-50"
-            >
-              {isSavingSettings ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4" />
-              )}
-              Ayarları Kaydet
-            </button>
           </div>
         </CardBody>
       </Card>
