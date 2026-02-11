@@ -65,7 +65,7 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
 
     // Seçilen option'ı bul
     const column = columns.find((col) => col.name === columnName);
-    if (!column) return;, manualPrices
+    if (!column) return;
 
     const selectedOption = column.options.find((opt) => opt.value === value);
     
