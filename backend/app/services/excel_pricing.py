@@ -339,6 +339,15 @@ class ExcelPricingService:
             elif 'iskonto' in header_norm:
                 discount_col = i
         
+        # Fallback: Eğer fiyat sütunu bulunamadıysa ve value sütunu varsa,
+        # value'dan sonraki ilk sütunu fiyat sütunu olarak kabul et
+        if price_col is None and value_col is not None:
+            for i in range(value_col + 1, len(headers)):
+                if pd.notna(headers[i]) and 'iskonto' not in self._normalize_turkish(str(headers[i])):
+                    price_col = i
+                    logger.info(f"Fallback: Using column {i} ({headers[i]}) as price column")
+                    break
+        
         logger.info(f"Sheet {sheet_name}: value={value_col}, price={price_col}, offset={offset_col}, discount={discount_col}")
         
         # Değerleri topla

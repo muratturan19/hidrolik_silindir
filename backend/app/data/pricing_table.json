@@ -8,84 +8,84 @@
           "value": "Ø40/50",
           "label": "Ø40/50",
           "price": 29.33,
-          "discount": 10.0,
+          "discount": 25,
           "offset": 50
         },
         {
           "value": "Ø50/60",
           "label": "Ø50/60",
           "price": 35.28,
-          "discount": 15.0,
+          "discount": 25,
           "offset": 50
         },
         {
           "value": "Ø63/75",
           "label": "Ø63/75",
           "price": 53.08,
-          "discount": 20.0,
+          "discount": 25,
           "offset": 50
         },
         {
           "value": "Ø80/95",
           "label": "Ø80/95",
           "price": 76.93,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 60
         },
         {
           "value": "Ø100/115",
           "label": "Ø100/115",
           "price": 94.35,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 60
         },
         {
           "value": "Ø125/145",
           "label": "Ø125/145",
           "price": 158.95,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 70
         },
         {
           "value": "Ø140/160",
           "label": "Ø140/160",
           "price": 176.8,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 70
         },
         {
           "value": "Ø160/180",
           "label": "Ø160/180",
-          "price": 206.0,
-          "discount": 25.0,
+          "price": 206,
+          "discount": 25,
           "offset": 80
         },
         {
           "value": "Ø200/230",
           "label": "Ø200/230",
-          "price": 391.0,
-          "discount": 25.0,
+          "price": 391,
+          "discount": 25,
           "offset": 80
         },
         {
           "value": "Ø220/254",
           "label": "Ø220/254",
           "price": 473.25,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 100
         },
         {
           "value": "Ø220/270",
           "label": "Ø220/270",
           "price": 817.7,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 100
         },
         {
           "value": "Ø250/300",
           "label": "Ø250/300",
-          "price": 918.0,
-          "discount": 25.0,
+          "price": 918,
+          "discount": 25,
           "offset": 120
         }
       ],
@@ -100,84 +100,84 @@
           "value": "Ø40/50",
           "label": "Ø40/50",
           "price": 3.39,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø50/60",
           "label": "Ø50/60",
           "price": 4.1,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø63/75",
           "label": "Ø63/75",
           "price": 5.64,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø80/95",
           "label": "Ø80/95",
           "price": 8.81,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø100/115",
           "label": "Ø100/115",
           "price": 12.39,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø125/145",
           "label": "Ø125/145",
           "price": 20.64,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø140/160",
           "label": "Ø140/160",
           "price": 24.96,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø160/180",
           "label": "Ø160/180",
           "price": 31.44,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø200/230",
           "label": "Ø200/230",
           "price": 54.33,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø220/254",
           "label": "Ø220/254",
-          "price": 68.0,
-          "discount": 25.0,
+          "price": 68,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø220/270",
           "label": "Ø220/270",
-          "price": 82.0,
-          "discount": 25.0,
+          "price": 82,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø250/300",
           "label": "Ø250/300",
-          "price": 95.0,
-          "discount": 25.0,
+          "price": 95,
+          "discount": 25,
           "offset": 0
         }
       ],
@@ -192,77 +192,77 @@
           "value": "Ø40",
           "label": "Ø40",
           "price": 2.58,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø50",
           "label": "Ø50",
           "price": 3.05,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø63",
           "label": "Ø63",
           "price": 4.23,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø80",
           "label": "Ø80",
           "price": 1.23,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø100",
           "label": "Ø100",
           "price": 7.38,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø125",
           "label": "Ø125",
           "price": 10.84,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø140",
           "label": "Ø140",
           "price": 17.46,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø160",
           "label": "Ø160",
           "price": 24.95,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø200",
           "label": "Ø200",
           "price": 32.89,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø220",
           "label": "Ø220",
           "price": 61.95,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø250",
           "label": "Ø250",
           "price": 102.9,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         }
       ],
@@ -276,78 +276,78 @@
         {
           "value": "Ø40",
           "label": "Ø40",
-          "price": 5.0,
-          "discount": 0.0,
+          "price": 5,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø50",
           "label": "Ø50",
-          "price": 6.0,
-          "discount": 0.0,
+          "price": 6,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø63",
           "label": "Ø63",
-          "price": 8.0,
-          "discount": 0.0,
+          "price": 8,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø80",
           "label": "Ø80",
-          "price": 12.0,
-          "discount": 0.0,
+          "price": 12,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø100",
           "label": "Ø100",
-          "price": 13.0,
-          "discount": 0.0,
+          "price": 13,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø125",
           "label": "Ø125",
-          "price": 14.0,
-          "discount": 0.0,
+          "price": 14,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø140",
           "label": "Ø140",
-          "price": 28.0,
-          "discount": 0.0,
+          "price": 28,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø160",
           "label": "Ø160",
-          "price": 33.0,
-          "discount": 0.0,
+          "price": 33,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø200",
           "label": "Ø200",
-          "price": 56.0,
-          "discount": 0.0,
+          "price": 56,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø220",
           "label": "Ø220",
-          "price": 58.0,
-          "discount": 0.0,
+          "price": 58,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø250",
           "label": "Ø250",
-          "price": 62.0,
-          "discount": 0.0,
+          "price": 62,
+          "discount": 0,
           "offset": 0
         }
       ],
@@ -361,78 +361,78 @@
         {
           "value": "Ø40",
           "label": "Ø40",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø50",
           "label": "Ø50",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø63",
           "label": "Ø63",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø80",
           "label": "Ø80",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø100",
           "label": "Ø100",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø125",
           "label": "Ø125",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø140",
           "label": "Ø140",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø160",
           "label": "Ø160",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø200",
           "label": "Ø200",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø220",
           "label": "Ø220",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø250",
           "label": "Ø250",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         }
       ],
@@ -447,77 +447,77 @@
           "value": "Ø28",
           "label": "Ø28",
           "price": 17.06,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 160
         },
         {
           "value": "Ø36",
           "label": "Ø36",
           "price": 27.88,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 160
         },
         {
           "value": "Ø40",
           "label": "Ø40",
           "price": 33.55,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 160
         },
         {
           "value": "Ø45",
           "label": "Ø45",
           "price": 42.42,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 170
         },
         {
           "value": "Ø56",
           "label": "Ø56",
           "price": 67.3,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 170
         },
         {
           "value": "Ø70",
           "label": "Ø70",
           "price": 103.46,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 200
         },
         {
           "value": "Ø80",
           "label": "Ø80",
           "price": 133.21,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 200
         },
         {
           "value": "Ø90",
           "label": "Ø90",
           "price": 164.65,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 200
         },
         {
           "value": "Ø100",
           "label": "Ø100",
           "price": 193.13,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 230
         },
         {
           "value": "Ø110",
           "label": "Ø110",
           "price": 280.33,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 230
         },
         {
           "value": "Ø140",
           "label": "Ø140",
           "price": 680.64,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 250
         }
       ],
@@ -532,140 +532,140 @@
           "value": "Ø20",
           "label": "Ø20",
           "price": 8.69,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø25",
           "label": "Ø25",
           "price": 10.05,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø30",
           "label": "Ø30",
           "price": 11.59,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø35",
           "label": "Ø35",
           "price": 17.39,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø40",
           "label": "Ø40",
           "price": 21.25,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø40 CE",
           "label": "Ø40 CE",
-          "price": 74.0,
-          "discount": 25.0,
+          "price": 74,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø50",
           "label": "Ø50",
           "price": 40.57,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø60",
           "label": "Ø60",
           "price": 63.76,
-          "discount": 25.0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø63 CE",
           "label": "Ø63 CE",
-          "price": 0.0,
-          "discount": 25.0,
+          "price": 0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø70",
           "label": "Ø70",
-          "price": 0.0,
-          "discount": 25.0,
+          "price": 0,
+          "discount": 25,
           "offset": 0
         },
         {
           "value": "Ø80 CE",
           "label": "Ø80 CE",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø90",
           "label": "Ø90",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø100",
           "label": "Ø100",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø110",
           "label": "Ø110",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø110 CE",
           "label": "Ø110 CE",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø120",
           "label": "Ø120",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø125CE",
           "label": "Ø125CE",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø130",
           "label": "Ø130",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø140",
           "label": "Ø140",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø160",
           "label": "Ø160",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         }
       ],
@@ -679,78 +679,78 @@
         {
           "value": "Ø40",
           "label": "Ø40",
-          "price": 12.0,
-          "discount": 0.0,
+          "price": 12,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø50",
           "label": "Ø50",
-          "price": 13.0,
-          "discount": 0.0,
+          "price": 13,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø63",
           "label": "Ø63",
-          "price": 15.0,
-          "discount": 0.0,
+          "price": 15,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø80",
           "label": "Ø80",
-          "price": 18.0,
-          "discount": 0.0,
+          "price": 18,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø100",
           "label": "Ø100",
-          "price": 22.0,
-          "discount": 0.0,
+          "price": 22,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø125",
           "label": "Ø125",
-          "price": 25.0,
-          "discount": 0.0,
+          "price": 25,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø140",
           "label": "Ø140",
-          "price": 50.0,
-          "discount": 0.0,
+          "price": 50,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø160",
           "label": "Ø160",
-          "price": 75.0,
-          "discount": 0.0,
+          "price": 75,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø200",
           "label": "Ø200",
-          "price": 228.0,
-          "discount": 0.0,
+          "price": 228,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø220",
           "label": "Ø220",
-          "price": 254.0,
-          "discount": 0.0,
+          "price": 254,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø250",
           "label": "Ø250",
-          "price": 241.0,
-          "discount": 0.0,
+          "price": 241,
+          "discount": 0,
           "offset": 0
         }
       ],
@@ -765,140 +765,140 @@
           "value": "Ø20",
           "label": "Ø20",
           "price": 8.69,
-          "discount": 0.0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø25",
           "label": "Ø25",
           "price": 10.05,
-          "discount": 0.0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø30",
           "label": "Ø30",
           "price": 11.59,
-          "discount": 0.0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø35",
           "label": "Ø35",
           "price": 17.39,
-          "discount": 0.0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø40",
           "label": "Ø40",
           "price": 21.25,
-          "discount": 0.0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø50",
           "label": "Ø50",
           "price": 40.57,
-          "discount": 0.0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø60",
           "label": "Ø60",
           "price": 63.76,
-          "discount": 0.0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø63 CE",
           "label": "Ø63 CE",
-          "price": 139.0,
-          "discount": 0.0,
+          "price": 139,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø70",
           "label": "Ø70",
           "price": 85.01,
-          "discount": 0.0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø80 CE",
           "label": "Ø80 CE",
-          "price": 271.0,
-          "discount": 0.0,
+          "price": 271,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø90",
           "label": "Ø90",
-          "price": 385.0,
-          "discount": 0.0,
+          "price": 385,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø100",
           "label": "Ø100",
-          "price": 549.0,
-          "discount": 0.0,
+          "price": 549,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø110",
           "label": "Ø110",
-          "price": 783.0,
-          "discount": 0.0,
+          "price": 783,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø110 CE",
           "label": "Ø110 CE",
-          "price": 798.0,
-          "discount": 0.0,
+          "price": 798,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø120",
           "label": "Ø120",
-          "price": 935.0,
-          "discount": 0.0,
+          "price": 935,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø125CE",
           "label": "Ø125CE",
-          "price": 947.0,
-          "discount": 0.0,
+          "price": 947,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø130",
           "label": "Ø130",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø140",
           "label": "Ø140",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø160",
           "label": "Ø160",
-          "price": 0.0,
-          "discount": 0.0,
+          "price": 0,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø200CE",
           "label": "Ø200CE",
-          "price": 2000.0,
-          "discount": 0.0,
+          "price": 2000,
+          "discount": 0,
           "offset": 0
         }
       ],
@@ -912,78 +912,78 @@
         {
           "value": "Ø40",
           "label": "Ø40",
-          "price": 7.0,
-          "discount": 0.0,
+          "price": 7,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø50",
           "label": "Ø50",
-          "price": 7.0,
-          "discount": 0.0,
+          "price": 7,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø63",
           "label": "Ø63",
-          "price": 9.0,
-          "discount": 0.0,
+          "price": 9,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø80",
           "label": "Ø80",
-          "price": 10.0,
-          "discount": 0.0,
+          "price": 10,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø100",
           "label": "Ø100",
-          "price": 11.0,
-          "discount": 0.0,
+          "price": 11,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø125",
           "label": "Ø125",
-          "price": 17.0,
-          "discount": 0.0,
+          "price": 17,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø140",
           "label": "Ø140",
-          "price": 20.0,
-          "discount": 0.0,
+          "price": 20,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø160",
           "label": "Ø160",
-          "price": 25.0,
-          "discount": 0.0,
+          "price": 25,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø200",
           "label": "Ø200",
-          "price": 45.0,
-          "discount": 0.0,
+          "price": 45,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø220",
           "label": "Ø220",
-          "price": 50.0,
-          "discount": 0.0,
+          "price": 50,
+          "discount": 0,
           "offset": 0
         },
         {
           "value": "Ø250",
           "label": "Ø250",
-          "price": 75.0,
-          "discount": 0.0,
+          "price": 75,
+          "discount": 0,
           "offset": 0
         }
       ],
@@ -992,8 +992,11 @@
     }
   ],
   "metadata": {
-    "format": "multi_sheet",
-    "sheets": 10,
-    "categories": 10
+    "format": "manual_edit",
+    "updated": true,
+    "created_at": "2026-02-11T22:12:09.070309",
+    "version": 1,
+    "last_updated": "2026-02-11T22:12:09.070327",
+    "update_history": []
   }
 }
