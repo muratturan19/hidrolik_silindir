@@ -157,17 +157,10 @@ export function PriceInputModal({ isOpen, onClose, onSubmit, itemName, itemValue
           <div className="flex gap-2">
             <button
               onClick={() => handleSubmit(false)}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-medium rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all shadow-lg shadow-blue-500/25"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-medium rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all shadow-lg shadow-blue-500/25"
             >
               <Calculator className="h-4 w-4" />
-              Sadece Şimdi Kullan
-            </button>
-            <button
-              onClick={() => handleSubmit(true)}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg shadow-emerald-500/25"
-            >
-              <Save className="h-4 w-4" />
-              Kaydet ve Kullan
+              Hesapla ve Kullan
             </button>
           </div>
           <button

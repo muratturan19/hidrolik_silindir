@@ -301,7 +301,7 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
             return (
               <div key={column.name} className="relative">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  {column.display_name}
+                  {column.display_name} <span className="text-red-500">*</span>
                   {column.is_meter_based && (
                     <span className="ml-1 text-xs text-blue-500 font-normal">(metre bazlı)</span>
                   )}
@@ -335,7 +335,7 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
       {columns.length > 0 && (
         <button
           onClick={handleCalculate}
-          disabled={isCalculating || Object.keys(selections).length === 0}
+          disabled={isCalculating || !columns.every(col => selections[col.name] && selections[col.name] !== '')}
           className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/25"
         >
           {isCalculating ? (
