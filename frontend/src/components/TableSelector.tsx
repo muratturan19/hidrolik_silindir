@@ -56,9 +56,27 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
   };
 
   const applyStandardDimensions = (boreValue: string, currentSelections: Record<string, string>) => {
-    if (!STANDARD_DIMENSIONS[boreValue]) return currentSelections;
+    // Seçilen değerden Boru Çapını ayıkla (örn: "Ø80/95" -> "Ø80")
+    let boreKey = boreValue;
+    if (boreValue.includes('/')) {
+      boreKey = boreValue.split('/')[0].trim();
+    }
+    
+    // Tam eşleşme yoksa, belki "Ø" eksiktir veya fazladır
+    if (!STANDARD_DIMENSIONS[boreKey]) {
+        // Eğer "80" geldiyse "Ø80" dene
+        if (!boreKey.startsWith('Ø') && STANDARD_DIMENSIONS[`Ø${boreKey}`]) {
+            boreKey = `Ø${boreKey}`;
+        }
+        // Eğer "Ø80" geldiyse ama key "80" ise (bu örnekte keyler Ø'li ama yine de)
+        else if (boreKey.startsWith('Ø') && STANDARD_DIMENSIONS[boreKey.substring(1)]) {
+            boreKey = boreKey.substring(1);
+        }
+    }
 
-    const standards = STANDARD_DIMENSIONS[boreValue];
+    if (!STANDARD_DIMENSIONS[boreKey]) return currentSelections;
+
+    const standards = STANDARD_DIMENSIONS[boreKey];
     let newSelections = { ...currentSelections };
 
     // Diğer kolonları bul ve güncelle
@@ -72,11 +90,23 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
         const mappedProp = COLUMN_MAPPING_FOR_STANDARDS[stdKey];
         const stdValue = standards[mappedProp];
         
-        // Bu değer option'larda var mı?
-        const hasOption = col.options.some(opt => opt.value === stdValue);
+        // Bu standart değer option'larda birebir var mı?
+        const exactMatch = col.options.find(opt => opt.value === stdValue);
         
-        if (hasOption) {
+        if (exactMatch) {
           newSelections[col.name] = stdValue;
+        } else {
+            // Tam eşleşme yoksa, belki "/" içeren bir format vardır (örn: std="Ø30" ama option="Ø30/45")
+            // Veya tam tersi (std="Ø30/45" ama option="Ø30")
+            const partialMatch = col.options.find(opt => {
+                const optVal = opt.value.split('/')[0].trim();
+                const stdVal = stdValue.split('/')[0].trim();
+                return optVal === stdVal;
+            });
+
+            if (partialMatch) {
+                newSelections[col.name] = partialMatch.value;
+            }
         }
       }
     });
