@@ -242,7 +242,7 @@ export function DimensionForm({
         loading={isLoading}
         disabled={!isValid}
       >
-        Fiyat Hesapla
+        Maliyet Hesapla
       </Button>
     </form>
   );

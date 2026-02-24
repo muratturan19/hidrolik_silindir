@@ -160,10 +160,22 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
 
   const formatPrice = (price: number, resultCurrency?: string) => {
     const priceCurrency = resultCurrency || 'EUR';
+
+    // If target is TRY and source is EUR, convert only if valid exchange rate (> 1)
     if (currency === 'TRY' && priceCurrency === 'EUR') {
-      const converted = price * exchangeRate;
-      return `₺${converted.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+      if (exchangeRate > 1) {
+        const converted = price * exchangeRate;
+        return `₺${converted.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+      }
+      // Fallback to displaying Euro if exchange rate is not set (e.g. 1)
+      return `€${price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
     }
+
+    // Default to displaying based on source currency
+    if (priceCurrency === 'TRY') {
+       return `₺${price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
+    }
+
     return `€${price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`;
   };
 
@@ -263,7 +275,7 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
           ) : (
             <>
               <Calculator className="h-5 w-5" />
-              Fiyat Hesapla
+              Maliyet Hesapla
             </>
           )}
         </button>
@@ -315,7 +327,7 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
               </tbody>
               <tfoot>
                 <tr className="border-t-2 border-gray-200">
-                  <td colSpan={3} className="pt-3 text-lg font-semibold text-gray-900">Toplam</td>
+                  <td colSpan={3} className="pt-3 text-lg font-semibold text-gray-900">Toplam Maliyet</td>
                   <td className="pt-3 text-right text-2xl font-bold text-emerald-600">
                     {formatPrice(priceResult.total, priceResult.currency)}
                   </td>

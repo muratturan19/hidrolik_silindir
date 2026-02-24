@@ -52,7 +52,7 @@ export function PricingResultCard({ result, currency = 'TRY', exchangeRate = 1 }
           <CardBody className="py-6">
             <div className="flex items-center gap-3 mb-2">
               <Calculator className="h-5 w-5 opacity-80" />
-              <span className="text-sm font-medium opacity-80">Toplam Fiyat</span>
+              <span className="text-sm font-medium opacity-80">Toplam Maliyet</span>
             </div>
             <p className="text-3xl font-bold">
               {formatCurrency(result.total_price)}
