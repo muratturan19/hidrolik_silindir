@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Loader2, AlertCircle, Calculator, Ruler } from 'lucide-react';
+import { Loader2, AlertCircle, Calculator, Ruler, Settings2 } from 'lucide-react';
 import {
   getExcelPricingOptions,
   getExcelPricingStatus,
@@ -9,6 +9,7 @@ import {
   type ExcelPriceResult,
 } from '../services/api';
 import { PriceInputModal } from './ui/PriceInputModal';
+import { STANDARD_DIMENSIONS, COLUMN_MAPPING_FOR_STANDARDS } from './StandardDimensions';
 
 interface TableSelectorProps {
   currency: string;
@@ -22,6 +23,8 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [manualPrices, setManualPrices] = useState<Record<string, number>>({});
   const [strokeMm, setStrokeMm] = useState<number>(500);
+  const [additionalStroke, setAdditionalStroke] = useState<number>(0);
+  const [useStandardDimensions, setUseStandardDimensions] = useState(false);
   const [priceResult, setPriceResult] = useState<ExcelPriceResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   
@@ -78,10 +81,36 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
     }
 
     // Normal seçim
-    setSelections((prev) => ({
-      ...prev,
-      [columnName]: value,
-    }));
+    let newSelections = { ...selections, [columnName]: value };
+
+    // Eğer standart ölçüler aktifse ve Boru Çapı seçildiyse diğerlerini otomatik seç
+    const isBoreColumn = columnName.toLowerCase().includes('boru') || columnName.toLowerCase().includes('silindir');
+    
+    if (useStandardDimensions && isBoreColumn && STANDARD_DIMENSIONS[value]) {
+       const standards = STANDARD_DIMENSIONS[value];
+       
+       // Diğer kolonları bul ve güncelle
+       columns.forEach(col => {
+         // Kolon adı mapping'de var mı?
+         const stdKey = Object.keys(COLUMN_MAPPING_FOR_STANDARDS).find(key => 
+           col.name.toLowerCase().includes(key) || key.includes(col.name.toLowerCase())
+         );
+         
+         if (stdKey) {
+           const mappedProp = COLUMN_MAPPING_FOR_STANDARDS[stdKey];
+           const stdValue = standards[mappedProp];
+           
+           // Bu değer option'larda var mı?
+           const hasOption = col.options.some(opt => opt.value === stdValue);
+           
+           if (hasOption) {
+             newSelections[col.name] = stdValue;
+           }
+         }
+       });
+    }
+
+    setSelections(newSelections);
     setPriceResult(null);
   };
 
@@ -149,7 +178,7 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
     setError(null);
 
     try {
-      const result = await calculateExcelPrice(selections, strokeMm, manualPrices);
+      const result = await calculateExcelPrice(selections, strokeMm, additionalStroke, manualPrices);
       setPriceResult(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Fiyat hesaplanırken hata oluştu');
@@ -196,28 +225,80 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
         </div>
       )}
 
-      {/* Strok Girişi - Her zaman göster */}
+      {/* Strok Girişi ve Ayarlar */}
       {columns.length > 0 && (
-        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-          <label className="flex items-center gap-2 text-sm font-medium text-blue-700 mb-2">
-            <Ruler className="h-4 w-4" />
-            Strok Uzunluğu (mm)
-          </label>
-          <input
-            type="number"
-            value={strokeMm}
-            onChange={(e) => {
-              setStrokeMm(Number(e.target.value));
-              setPriceResult(null);
-            }}
-            min={0}
-            step={10}
-            className="w-full px-4 py-2.5 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-lg font-medium"
-            placeholder="Strok uzunluğunu girin (mm)"
-          />
-          <p className="mt-2 text-xs text-blue-600">
-            Boru: Strok + 120mm | Mil: Strok + 150mm
-          </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+            <label className="flex items-center gap-2 text-sm font-medium text-blue-700 mb-2">
+              <Ruler className="h-4 w-4" />
+              Strok Uzunluğu (mm)
+            </label>
+            <input
+              type="number"
+              value={strokeMm}
+              onChange={(e) => {
+                setStrokeMm(Number(e.target.value));
+                setPriceResult(null);
+              }}
+              min={0}
+              step={10}
+              className="w-full px-4 py-2.5 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-lg font-medium"
+              placeholder="Strok uzunluğunu girin (mm)"
+            />
+            <p className="mt-2 text-xs text-blue-600">
+              Boru Boyu = Strok + 120mm
+            </p>
+          </div>
+
+          <div className="p-4 bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-xl border border-purple-100">
+            <div className="flex items-center justify-between mb-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-purple-700">
+                <Settings2 className="h-4 w-4" />
+                Ek Ayarlar
+              </label>
+              
+              <div className="flex items-center gap-2">
+                 <input
+                  type="checkbox"
+                  id="std-dims"
+                  checked={useStandardDimensions}
+                  onChange={(e) => setUseStandardDimensions(e.target.checked)}
+                  className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 border-gray-300" 
+                />
+                <label htmlFor="std-dims" className="text-xs font-medium text-purple-800 cursor-pointer select-none">
+                  Standart Ölçüleri Otomatik Seç
+                </label>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-purple-600 mb-1">
+                  İlave Piston Boyu (mm)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={additionalStroke}
+                    onChange={(e) => {
+                      setAdditionalStroke(Number(e.target.value));
+                      setPriceResult(null);
+                    }}
+                    min={0}
+                    step={1}
+                    className="w-full px-3 py-2 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-sm"
+                    placeholder="0"
+                  />
+                  <span className="text-xs text-purple-400 whitespace-nowrap">
+                    (+ Mil Boyu)
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-purple-600">
+                Mil Boyu = Strok + 150mm + İlave
+              </p>
+            </div>
+          </div>
         </div>
       )}
 

@@ -17,6 +17,7 @@ class PriceCalculationRequest(BaseModel):
     """Fiyat hesaplama isteği"""
     selections: Dict[str, str]
     stroke_mm: float = 0  # Strok uzunluğu (mm) - metre bazlı hesaplamalar için
+    additional_length_mm: float = 0  # İlave Piston Boyu (mm) - Mil boyuna eklenir (opsiyonel)
     manual_prices: Dict[str, float] = {}  # Manuel girilen fiyatlar (key: "column_name:value", value: price)
 
 
@@ -107,29 +108,26 @@ async def get_dropdown_options() -> Dict[str, Any]:
 @router.post("/calculate")
 async def calculate_price(request: PriceCalculationRequest) -> Dict[str, Any]:
     """
-    Seçimlere göre fiyat hesapla
-
-    Request body:
-        {
-            "selections": {
-                "silindir_capi": "Ø50",
-                "mil_capi": "Ø25",
-                ...
-            }
-        }
-
-    Returns:
-        {
-            "success": True,
-            "items": [
-                {"name": "Silindir Çapı", "value": "Ø50", "price": 100},
-                {"name": "Mil Çapı", "value": "Ø25", "price": 50}
-            ],
-            "total": 150
-        }
+    Excel tablosuna göre fiyat hesapla
+    
+    Request:
+    {
+        "selections": {
+            "silindir_capi": "Ø50",
+            "mil_capi": "Ø25"
+        },
+        "stroke_mm": 500,
+        "additional_length_mm": 50,
+        "manual_prices": {}
+    }
     """
     service = get_excel_pricing_service()
-    result = service.calculate_price(request.selections, request.stroke_mm, request.manual_prices)
+    result = service.calculate_price(
+        selections=request.selections, 
+        stroke_mm=request.stroke_mm,
+        additional_length_mm=request.additional_length_mm,
+        manual_prices=request.manual_prices
+    )
 
     if not result.get("success"):
         raise HTTPException(

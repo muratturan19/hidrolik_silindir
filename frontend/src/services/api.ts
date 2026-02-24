@@ -179,11 +179,13 @@ export async function getExcelPricingOptions(): Promise<ExcelPricingOptions> {
 export async function calculateExcelPrice(
   selections: Record<string, string>,
   stroke_mm: number = 0,
+  additional_length_mm: number = 0,
   manual_prices?: Record<string, number>
 ): Promise<ExcelPriceResult> {
   const response = await api.post('/excel-pricing/calculate', { 
     selections, 
     stroke_mm,
+    additional_length_mm,
     manual_prices: manual_prices || {}
   });
   return response.data;

@@ -314,6 +314,8 @@ export function ExcelSettingsPage() {
                 <a
                   href="/fiyat_tablosu_3.xlsx"
                   download="fiyat_tablosu_ornegi.xlsx"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
                 >
                   <Download className="h-4 w-4" />

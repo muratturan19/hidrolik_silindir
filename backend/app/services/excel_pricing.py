@@ -358,7 +358,7 @@ class ExcelPricingService:
             "metadata": self._pricing_table.metadata
         }
 
-    def calculate_price(self, selections: dict, stroke_mm: float = 0, manual_prices: dict = None) -> dict:
+    def calculate_price(self, selections: dict, stroke_mm: float = 0, additional_length_mm: float = 0, manual_prices: dict = None) -> dict:
         if not self._pricing_table:
             return {"success": False, "error": "Fiyat tablosu yüklenmemiş"}
 
@@ -404,12 +404,28 @@ class ExcelPricingService:
 
                     if col.is_meter_based and stroke_mm > 0:
                         # Çapa özel offset kullan (yoksa deprecated değer)
-                        length_mm = stroke_mm + (offset if offset > 0 else col.formula_add_mm)
+                        # Mil (Rod) için ilave boy ekle
+                        is_rod = "mil" in col.name.lower() or "kromlu" in col.name.lower()
+                        extra_length = additional_length_mm if is_rod else 0
+                        
+                        length_mm = stroke_mm + (offset if offset > 0 else col.formula_add_mm) + extra_length
                         length_m = length_mm / 1000.0
                         calculated_price = unit_price * length_m
                         
                         # İskonto uygula
                         price_after_discount = calculated_price * (1 - discount / 100)
+
+                        formula_parts = []
+                        formula_parts.append(f"{stroke_mm}")
+                        
+                        offset_val = offset if offset > 0 else col.formula_add_mm
+                        if offset_val > 0:
+                            formula_parts.append(f"{offset_val}")
+                            
+                        if extra_length > 0:
+                            formula_parts.append(f"{extra_length} (İlave)")
+                            
+                        formula_str = f"({' + '.join(formula_parts)}) mm × {unit_price} €/m × (1 - {discount}%)"
 
                         items.append({
                             "name": col.display_name,
@@ -418,10 +434,11 @@ class ExcelPricingService:
                             "unit": "€/m",
                             "length_mm": length_mm,
                             "length_m": round(length_m, 3),
-                            "offset_mm": offset if offset > 0 else col.formula_add_mm,
+                            "offset_mm": offset_val,
+                            "additional_length_mm": extra_length,
                             "discount_percent": discount,
                             "price_before_discount": round(calculated_price, 2),
-                            "formula": f"({stroke_mm} + {offset if offset > 0 else col.formula_add_mm}) mm × {unit_price} €/m × (1 - {discount}%)",
+                            "formula": formula_str,
                             "price": round(price_after_discount, 2)
                         })
                         total += price_after_discount
