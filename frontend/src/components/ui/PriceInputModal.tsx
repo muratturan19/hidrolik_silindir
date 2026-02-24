@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AlertCircle, X, Calculator, Save } from 'lucide-react';
+import { AlertCircle, X, Calculator } from 'lucide-react';
 
 interface PriceInputModalProps {
   isOpen: boolean;
