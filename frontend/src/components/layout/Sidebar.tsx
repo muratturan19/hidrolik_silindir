@@ -49,6 +49,10 @@ const adminNavItems = [
     icon: Table2,
     label: 'Excel Tablosu',
   },
+];
+
+// Portal modunda kullanıcı yönetimi Portal üzerinden yapılır
+const standaloneOnlyAdminNavItems = [
   {
     path: '/users',
     icon: Users,
@@ -148,6 +152,32 @@ export function Sidebar({ collapsed, onToggle, userInfo }: SidebarProps) {
               {adminExpanded && (
                 <div className="mt-1 space-y-1">
                   {adminNavItems.map((item) => (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      className={({ isActive }) => `
+                        flex items-center gap-3 px-3 py-2.5 rounded-xl
+                        transition-all duration-200 group
+                        ${isActive
+                          ? 'bg-amber-50 text-amber-700'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }
+                      `}
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <item.icon
+                            className={`h-5 w-5 flex-shrink-0 ${
+                              isActive ? 'text-amber-600' : 'text-gray-400 group-hover:text-gray-600'
+                            }`}
+                          />
+                          <span className="font-medium whitespace-nowrap flex-1">{item.label}</span>
+                        </>
+                      )}
+                    </NavLink>
+                  ))}
+                  {/* Kullanıcı yönetimi sadece standalone modda göster - portal modunda Portal üzerinden */}
+                  {!APP_CONFIG.IS_PORTAL && standaloneOnlyAdminNavItems.map((item) => (
                     <NavLink
                       key={item.path}
                       to={item.path}

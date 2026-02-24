@@ -156,9 +156,25 @@ function App() {
           <Route
             path="users"
             element={
-              <ProtectedRoute>
-                <UserManagementPage />
-              </ProtectedRoute>
+              APP_CONFIG.IS_PORTAL ? (
+                // Portal modunda kullanıcı yönetimi Portal üzerinden yapılır
+                <div className="flex items-center justify-center h-96">
+                  <div className="text-center space-y-4">
+                    <p className="text-gray-600 text-lg font-medium">Kullanıcı Yönetimi</p>
+                    <p className="text-gray-500 text-sm">Kullanıcılar ve yetkiler Portal yönetim panelinden yönetilmektedir.</p>
+                    <a
+                      href="https://portal.deltaproje.com/admin"
+                      className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+                    >
+                      Portal Yönetim Paneline Git →
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <ProtectedRoute>
+                  <UserManagementPage />
+                </ProtectedRoute>
+              )
             }
           />
           <Route
