@@ -23,7 +23,7 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [manualPrices, setManualPrices] = useState<Record<string, number>>({});
   const [strokeMm, setStrokeMm] = useState<number>(500);
-  const [additionalStroke, setAdditionalStroke] = useState<number>(0);
+  const [additionalStroke, setAdditionalStroke] = useState<number | string>(0);
   const [useStandardDimensions, setUseStandardDimensions] = useState(false);
   const [priceResult, setPriceResult] = useState<ExcelPriceResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -234,7 +234,7 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
     setError(null);
 
     try {
-      const result = await calculateExcelPrice(selections, strokeMm, additionalStroke, manualPrices);
+      const result = await calculateExcelPrice(selections, strokeMm, Number(additionalStroke), manualPrices);
       setPriceResult(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Fiyat hesaplanırken hata oluştu');
@@ -316,7 +316,7 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
                 type="number"
                 value={additionalStroke}
                 onChange={(e) => {
-                  setAdditionalStroke(Number(e.target.value));
+                  setAdditionalStroke(e.target.value);
                   setPriceResult(null);
                 }}
                 min={0}
