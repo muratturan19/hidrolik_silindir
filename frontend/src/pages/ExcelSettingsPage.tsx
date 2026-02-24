@@ -312,7 +312,7 @@ export function ExcelSettingsPage() {
                   Her kategori ayrı bir sheet'te olmalıdır.
                 </p>
                 <a
-                  href="/fiyat_tablosu_3.xlsx"
+                  href="/hidrolik/fiyat_tablosu_3.xlsx"
                   download="fiyat_tablosu_ornegi.xlsx"
                   target="_blank"
                   rel="noopener noreferrer"

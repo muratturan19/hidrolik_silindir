@@ -225,7 +225,7 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
         </div>
       )}
 
-      {/* Strok Girişi ve Ayarlar */}
+      {/* Strok Girişi */}
       {columns.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
@@ -251,54 +251,44 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
           </div>
 
           <div className="p-4 bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-xl border border-purple-100">
-            <div className="flex items-center justify-between mb-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-purple-700">
-                <Settings2 className="h-4 w-4" />
-                Ek Ayarlar
-              </label>
-              
-              <div className="flex items-center gap-2">
-                 <input
-                  type="checkbox"
-                  id="std-dims"
-                  checked={useStandardDimensions}
-                  onChange={(e) => setUseStandardDimensions(e.target.checked)}
-                  className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 border-gray-300" 
-                />
-                <label htmlFor="std-dims" className="text-xs font-medium text-purple-800 cursor-pointer select-none">
-                  Standart Ölçüleri Otomatik Seç
-                </label>
-              </div>
+            <label className="flex items-center gap-2 text-sm font-medium text-purple-700 mb-2">
+              <Settings2 className="h-4 w-4" />
+              Mil Uzatma Payı (mm)
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={additionalStroke}
+                onChange={(e) => {
+                  setAdditionalStroke(Number(e.target.value));
+                  setPriceResult(null);
+                }}
+                min={0}
+                step={1}
+                className="w-full px-3 py-2.5 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-lg font-medium"
+                placeholder="0"
+              />
             </div>
-            
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-purple-600 mb-1">
-                  İlave Piston Boyu (mm)
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    value={additionalStroke}
-                    onChange={(e) => {
-                      setAdditionalStroke(Number(e.target.value));
-                      setPriceResult(null);
-                    }}
-                    min={0}
-                    step={1}
-                    className="w-full px-3 py-2 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white text-sm"
-                    placeholder="0"
-                  />
-                  <span className="text-xs text-purple-400 whitespace-nowrap">
-                    (+ Mil Boyu)
-                  </span>
-                </div>
-              </div>
-              <p className="text-xs text-purple-600">
-                Mil Boyu = Strok + 150mm + İlave
-              </p>
-            </div>
+            <p className="mt-2 text-xs text-purple-600">
+              Mil Boyu = Strok + 150mm + Uzatma Payı
+            </p>
           </div>
+        </div>
+      )}
+
+      {/* Standart Ölçü Seçimi - Ayrı Bölüm */}
+      {columns.length > 0 && (
+        <div className="flex items-center gap-2 py-2 px-1">
+            <input
+            type="checkbox"
+            id="std-dims"
+            checked={useStandardDimensions}
+            onChange={(e) => setUseStandardDimensions(e.target.checked)}
+            className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-gray-300" 
+          />
+          <label htmlFor="std-dims" className="text-sm font-medium text-emerald-800 cursor-pointer select-none">
+            Standart Ölçüleri Otomatik Seç (Boru Çapına Göre)
+          </label>
         </div>
       )}
 
