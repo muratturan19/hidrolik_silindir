@@ -314,9 +314,10 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
             <div className="flex items-center gap-2">
               <input
                 type="number"
-                value={additionalStroke}
+                value={additionalStroke === 0 ? '' : additionalStroke}
                 onChange={(e) => {
-                  setAdditionalStroke(e.target.value);
+                  const val = e.target.value;
+                  setAdditionalStroke(val === '' ? 0 : val);
                   setPriceResult(null);
                 }}
                 min={0}
