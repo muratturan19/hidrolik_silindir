@@ -55,6 +55,35 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
     }
   };
 
+  const applyStandardDimensions = (boreValue: string, currentSelections: Record<string, string>) => {
+    if (!STANDARD_DIMENSIONS[boreValue]) return currentSelections;
+
+    const standards = STANDARD_DIMENSIONS[boreValue];
+    let newSelections = { ...currentSelections };
+
+    // Diğer kolonları bul ve güncelle
+    columns.forEach(col => {
+      // Kolon adı mapping'de var mı?
+      const stdKey = Object.keys(COLUMN_MAPPING_FOR_STANDARDS).find(key => 
+        col.name.toLowerCase().includes(key) || key.includes(col.name.toLowerCase())
+      );
+      
+      if (stdKey) {
+        const mappedProp = COLUMN_MAPPING_FOR_STANDARDS[stdKey];
+        const stdValue = standards[mappedProp];
+        
+        // Bu değer option'larda var mı?
+        const hasOption = col.options.some(opt => opt.value === stdValue);
+        
+        if (hasOption) {
+          newSelections[col.name] = stdValue;
+        }
+      }
+    });
+    
+    return newSelections;
+  };
+
   const handleSelectionChange = (columnName: string, value: string) => {
     // YOK seçiliyorsa direkt kabul et
     if (value === 'YOK' || value === '') {
@@ -86,32 +115,29 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
     // Eğer standart ölçüler aktifse ve Boru Çapı seçildiyse diğerlerini otomatik seç
     const isBoreColumn = columnName.toLowerCase().includes('boru') || columnName.toLowerCase().includes('silindir');
     
-    if (useStandardDimensions && isBoreColumn && STANDARD_DIMENSIONS[value]) {
-       const standards = STANDARD_DIMENSIONS[value];
-       
-       // Diğer kolonları bul ve güncelle
-       columns.forEach(col => {
-         // Kolon adı mapping'de var mı?
-         const stdKey = Object.keys(COLUMN_MAPPING_FOR_STANDARDS).find(key => 
-           col.name.toLowerCase().includes(key) || key.includes(col.name.toLowerCase())
-         );
-         
-         if (stdKey) {
-           const mappedProp = COLUMN_MAPPING_FOR_STANDARDS[stdKey];
-           const stdValue = standards[mappedProp];
-           
-           // Bu değer option'larda var mı?
-           const hasOption = col.options.some(opt => opt.value === stdValue);
-           
-           if (hasOption) {
-             newSelections[col.name] = stdValue;
-           }
-         }
-       });
+    if (useStandardDimensions && isBoreColumn) {
+       newSelections = applyStandardDimensions(value, newSelections);
     }
 
     setSelections(newSelections);
     setPriceResult(null);
+  };
+  
+  const handleStandardDimensionsToggle = (checked: boolean) => {
+    setUseStandardDimensions(checked);
+    
+    if (checked) {
+       // Aktif edildiğinde mevcut Boru seçimine göre uygula
+       const boreColumn = columns.find(c => c.name.toLowerCase().includes('boru') || c.name.toLowerCase().includes('silindir'));
+       if (boreColumn) {
+         const currentBoreValue = selections[boreColumn.name];
+         if (currentBoreValue) {
+           const newSelections = applyStandardDimensions(currentBoreValue, selections);
+           setSelections(newSelections);
+           setPriceResult(null);
+         }
+       }
+    }
   };
 
   const handleManualPriceSubmit = (price: number, discount: number, saveToDb: boolean) => {
@@ -283,7 +309,7 @@ export function TableSelector({ currency, exchangeRate }: TableSelectorProps) {
             type="checkbox"
             id="std-dims"
             checked={useStandardDimensions}
-            onChange={(e) => setUseStandardDimensions(e.target.checked)}
+            onChange={(e) => handleStandardDimensionsToggle(e.target.checked)}
             className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-gray-300" 
           />
           <label htmlFor="std-dims" className="text-sm font-medium text-emerald-800 cursor-pointer select-none">
